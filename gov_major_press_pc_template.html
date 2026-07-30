@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>주요부처 공지·보도자료 함께보기 (PC)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-low": "#f3f3fe","secondary-fixed": "#ffdbca","inverse-on-surface": "#f0f0fb",
+              "surface-variant": "#e1e2ed","primary-fixed-dim": "#b4c5ff","surface-container": "#ededf9",
+              "surface-container-high": "#e7e7f3","primary-fixed": "#dbe1ff","on-tertiary": "#ffffff",
+              "on-secondary": "#ffffff","on-primary-fixed-variant": "#003ea8","secondary-container": "#fd761a",
+              "surface-container-lowest": "#ffffff","primary-container": "#2563eb","error-container": "#ffdad6",
+              "on-error-container": "#93000a","on-tertiary-fixed-variant": "#7d2d00","primary": "#004ac6",
+              "tertiary-container": "#bc4800","inverse-primary": "#b4c5ff","tertiary-fixed": "#ffdbcd",
+              "surface-dim": "#d9d9e5","on-tertiary-container": "#ffede6","surface-tint": "#0053db",
+              "outline": "#737686","on-surface-variant": "#434655","on-surface": "#191b23","secondary": "#9d4300",
+              "on-error": "#ffffff","surface-container-highest": "#e1e2ed","background": "#faf8ff",
+              "on-secondary-fixed": "#341100","tertiary-fixed-dim": "#ffb596","outline-variant": "#c3c6d7",
+              "on-background": "#191b23","on-tertiary-fixed": "#360f00","on-secondary-fixed-variant": "#783200",
+              "on-secondary-container": "#5c2400","secondary-fixed-dim": "#ffb690","tertiary": "#943700",
+              "error": "#ba1a1a","on-primary": "#ffffff","on-primary-container": "#eeefff",
+              "inverse-surface": "#2e3039","surface": "#faf8ff","on-primary-fixed": "#00174b","surface-bright": "#faf8ff"
+            },
+            borderRadius: { DEFAULT:"0.25rem", lg:"0.5rem", xl:"0.75rem", full:"9999px" },
+            spacing: { "grid-gutter":"1.25rem", "container-padding":"2rem", "stack-gap":"0.5rem", "card-padding":"1rem" },
+            fontFamily: { "header-title":["Public Sans"], "list-item":["Public Sans"], "button-text":["Public Sans"], "meta-data":["Public Sans"], "board-title":["Public Sans"] },
+            fontSize: {
+              "header-title":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],
+              "list-item":["14px",{"lineHeight":"20px","fontWeight":"500"}],
+              "button-text":["14px",{"lineHeight":"20px","fontWeight":"600"}],
+              "meta-data":["12px",{"lineHeight":"16px","fontWeight":"400"}],
+              "board-title":["16px",{"lineHeight":"24px","fontWeight":"700"}]
+            }
+          }
+        }
+      }
+</script>
+<style>
+.material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; vertical-align:middle; }
+body { font-family:'Public Sans',sans-serif; background-color:#faf8ff; }
+.dept-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.dept-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); }
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<header class="fixed top-0 left-0 right-0 z-50 bg-primary text-on-primary shadow-md rounded-b-xl flex flex-col md:flex-row justify-between items-center px-container-padding py-6 w-full">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-3xl">newspaper</span>
+<div>
+<h1 class="font-header-title text-header-title tracking-tight">★주요부처★ 보도자료 함께보기</h1>
+<p class="font-meta-data text-meta-data text-on-primary/80 mt-1">공지사항 + 보도자료 · 부처당 최근 5개</p>
+</div>
+</div>
+<div class="flex items-center gap-3 mt-4 md:mt-0">
+<a href="gov_notice_board.html" class="text-on-primary/90 hover:bg-primary-container/20 px-3 py-2 rounded-lg font-button-text text-button-text no-underline">공지 보드로</a>
+<button id="btnReload" type="button" class="flex items-center gap-2 bg-on-primary text-primary px-4 py-2 rounded-full font-button-text text-button-text hover:bg-primary-fixed-dim transition-all active:scale-95">
+<span class="material-symbols-outlined">refresh</span>화면 새로고침
+</button>
+</div>
+</header>
+
+<main class="flex-1 px-4 md:px-container-padding py-8 pt-32 max-w-[1440px] mx-auto w-full">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border border-outline-variant bg-surface-container-low rounded-xl px-6 py-3 gap-4">
+<div class="flex items-center gap-4 flex-wrap">
+<span class="flex items-center gap-1 font-meta-data text-meta-data text-on-surface-variant" id="metaLine">
+<span class="material-symbols-outlined text-[16px]">schedule</span>데이터 준비 중…
+</span>
+</div>
+<div class="flex gap-2">
+<span class="px-3 py-1 rounded-full border border-primary text-primary font-meta-data text-meta-data bg-white">공지사항</span>
+<span class="px-3 py-1 rounded-full border border-secondary text-secondary font-meta-data text-meta-data bg-white">보도자료</span>
+</div>
+</div>
+<section class="flex flex-col gap-8" id="board"></section>
+</main>
+
+<footer class="w-full py-4 px-container-padding flex flex-col md:flex-row justify-between items-center gap-3 bg-surface-dim text-on-surface-variant border-t border-outline-variant mt-auto">
+<span class="font-bold font-meta-data text-meta-data">대한민국 정부 · 주요부처 보드</span>
+<div class="flex gap-6">
+<a class="font-meta-data text-meta-data hover:text-primary" href="gov_notice_board.html">PC 공지</a>
+<a class="font-meta-data text-meta-data hover:text-primary" href="gov_major_press_board_mobile.html">모바일 함께보기</a>
+</div>
+</footer>
+
+<script id="major-data" type="application/json">
+%%MAJOR_JSON%%
+</script>
+<script>
+(function () {
+  const META = {
+    '산업통상부': { color:'#004ac6', icon:'factory', domain:'MOTIR.GO.KR' },
+    '기후에너지환경부': { color:'#10b981', icon:'eco', domain:'MCEE.GO.KR' },
+    '고용노동부': { color:'#9d4300', icon:'groups', domain:'MOEL.GO.KR' },
+    '외교부': { color:'#2563eb', icon:'public', domain:'MOFA.GO.KR' }
+  };
+  const ORDER = ['산업통상부','기후에너지환경부','고용노동부','외교부'];
+  function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function listHtml(items, accent, isPress) {
+    const arr = (items||[]).slice(0,5);
+    if (!arr.length) return '<li class="py-3 text-on-surface-variant font-meta-data text-meta-data">표시할 항목이 없습니다.</li>';
+    return arr.map(function(p,i){
+      const last = i === arr.length-1;
+      const border = last ? '' : (isPress ? ' border-b border-secondary/10' : ' border-b border-outline-variant/10');
+      const date = p.date ? '<span class="font-meta-data text-meta-data text-on-surface-variant whitespace-nowrap">' + esc(p.date) + '</span>' : '';
+      return '<li class="flex justify-between items-start gap-4 py-2' + border + '">' +
+        '<a class="font-list-item text-list-item text-on-surface line-clamp-1 hover:opacity-80 no-underline" style="color:inherit" href="' + esc(p.url||'#') + '" target="_blank" rel="noopener noreferrer">' + esc(p.title) + '</a>' + date + '</li>';
+    }).join('');
+  }
+  function render(data) {
+    const board = document.getElementById('board');
+    const map = {};
+    (data.departments||[]).forEach(function(d){ map[d.name]=d; });
+    const depts = ORDER.map(function(n){ return map[n] || { name:n, ok:false, notices:[], press:[] }; });
+    document.getElementById('metaLine').innerHTML =
+      '<span class="material-symbols-outlined text-[16px]">schedule</span>최근 업데이트: <strong class="ml-1">' + esc(data.collectedAt||'-') + '</strong>' +
+      '<span class="mx-2">|</span>모니터링 부처: <strong>' + depts.length + '개</strong>';
+    board.innerHTML = depts.map(function(d){
+      const m = META[d.name] || { color:'#004ac6', icon:'star', domain:'' };
+      return '<article class="dept-card bg-white rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] overflow-hidden border border-outline-variant/30 flex flex-col">' +
+        '<div class="px-6 py-4 flex justify-between items-center" style="background:' + m.color + '">' +
+        '<div class="flex items-center gap-3"><span class="material-symbols-outlined text-white">' + m.icon + '</span>' +
+        '<h3 class="font-board-title text-board-title text-white">' + esc(d.name) + '</h3></div>' +
+        '<span class="text-white/80 font-meta-data text-meta-data">' + esc(m.domain) + '</span></div>' +
+        '<div class="grid grid-cols-1 md:grid-cols-2 divide-x divide-outline-variant/20">' +
+        '<div class="p-6"><h4 class="flex items-center gap-2 mb-4 font-button-text text-button-text" style="color:' + m.color + '">' +
+        '<span class="material-symbols-outlined text-[18px]">notifications</span>공지사항</h4>' +
+        '<ul class="space-y-1">' + listHtml(d.notices, m.color, false) + '</ul></div>' +
+        '<div class="p-6 bg-surface-container-lowest/50"><h4 class="flex items-center gap-2 mb-4 font-button-text text-button-text text-secondary">' +
+        '<span class="material-symbols-outlined text-[18px]">newspaper</span>보도자료</h4>' +
+        '<ul class="space-y-1">' + listHtml(d.press, m.color, true) + '</ul></div>' +
+        '</div></article>';
+    }).join('');
+  }
+  function load(){
+    const raw = document.getElementById('major-data').textContent.trim();
+    let data = { collectedAt:'', departments:[] };
+    try { if (raw && raw.charAt(0)==='{') data = JSON.parse(raw); } catch(e){ console.error(e); }
+    render(data);
+  }
+  document.getElementById('btnReload').addEventListener('click', function(){ location.reload(); });
+  load();
+})();
+</script>
+</body>
+</html>

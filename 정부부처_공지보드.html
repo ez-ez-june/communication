@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>정부부처 공지사항 보드</title>
+  <style>
+    :root {
+      --ink: #1f2a37;
+      --muted: #5b6775;
+      --line: #d9e2ec;
+      --bg0: #eef3f8;
+      --bg1: #f7fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #dbe7f5 0%, transparent 55%),
+        radial-gradient(900px 420px at 100% 0%, #e4eef8 0%, transparent 50%),
+        linear-gradient(180deg, var(--bg1), var(--bg0));
+    }
+    .wrap {
+      width: min(1480px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+    .topbar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 22px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #1f4e79 0%, #2f6ea8 100%);
+      color: #fff;
+      box-shadow: 0 10px 28px rgba(31, 78, 121, 0.28);
+      margin-bottom: 14px;
+    }
+    .topbar h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .topbar p {
+      margin: 6px 0 0;
+      font-size: 0.86rem;
+      opacity: 0.9;
+    }
+    .btn-refresh {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 18px;
+      background: #276ef1;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(39, 110, 241, 0.35);
+      white-space: nowrap;
+    }
+    .btn-refresh:hover { filter: brightness(1.06); }
+    .meta {
+      margin: 0 0 18px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 4px 14px rgba(31, 42, 55, 0.06);
+      min-height: 188px;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-head {
+      padding: 9px 12px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .card-body { flex: 1; padding: 4px 0; }
+    .item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: center;
+      min-height: 28px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      padding: 0 8px 0 4px;
+    }
+    .item:first-child { border-top: 0; }
+    .num {
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: #334155;
+    }
+    .title {
+      display: block;
+      font-size: 0.82rem;
+      line-height: 1.35;
+      color: #0563c1;
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .title:hover { text-decoration: underline; }
+    .fail {
+      padding: 14px 12px;
+      color: #c00000;
+      font-weight: 700;
+      font-size: 0.86rem;
+      background: #fce4d6;
+    }
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.7);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+    }
+    @media (max-width: 1200px) {
+      .board { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 860px) {
+      .board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .topbar { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 560px) {
+      .board { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div>
+        <h1>정부부처 공지사항 (최근 5개) · 4단 보드</h1>
+        <p>엑셀 결과시트와 같은 카드형 보기 · 제목 클릭 시 새 창</p>
+      </div>
+      <button type="button" class="btn-refresh" id="btnReload">공지 새로고침</button>
+    </header>
+    <p class="meta" id="metaLine">데이터 준비 중…</p>
+    <main class="board" id="board"></main>
+  </div>
+
+  <script id="notice-data" type="application/json">
+{"collectedAt":"2026-07-30 07:13:42","departments":[{"ok":true,"posts":[{"url":"https://www.mofe.go.kr/nw/nes/detailNesDtaView.do?searchBbsId1=MOSFBBS_000000000030\u0026searchNttId1=MOSF_000000000078669\u0026menuNo=4050100","title":"2026년 물가안정 유공 포상 후보자 공모"},{"url":"https://www.mofe.go.kr/nw/nes/detailNesDtaView.do?searchBbsId1=MOSFBBS_000000000030\u0026searchNttId1=MOSF_000000000078576\u0026menuNo=4050100","title":"「2026년 민원서비스 종합평가」 고충민원 만족도..."},{"url":"https://www.mofe.go.kr/nw/nes/detailNesDtaView.do?searchBbsId1=MOSFBBS_000000000030\u0026searchNttId1=MOSF_000000000078362\u0026menuNo=4050100","title":"2026년 3분기 적용 공공자금관리기금 금리 공지"},{"url":"https://www.mofe.go.kr/nw/nes/detailNesDtaView.do?searchBbsId1=MOSFBBS_000000000030\u0026searchNttId1=MOSF_000000000078201\u0026menuNo=4050100","title":"2026년 기록관리기준표 고시"},{"url":"https://www.mofe.go.kr/nw/nes/detailNesDtaView.do?searchBbsId1=MOSFBBS_000000000030\u0026searchNttId1=MOSF_000000000078152\u0026menuNo=4050100","title":"2026년 녹색기후기금(JPO) 초급전문가(JPO) 공고문"}],"name":"재정경제부"},{"ok":true,"posts":[{"url":"https://www.msit.go.kr/bbs/view.do?sCode=user\u0026mId=310\u0026mPid=121\u0026pageIndex=\u0026bbsSeqNo=96\u0026nttSeqNo=3186569\u0026searchOpt=ALL\u0026searchTxt=","title":"양자정보과학 인적기반조성사업 리더급연구역량강..."},{"url":"https://www.msit.go.kr/bbs/view.do?sCode=user\u0026mId=310\u0026mPid=121\u0026pageIndex=\u0026bbsSeqNo=96\u0026nttSeqNo=3186568\u0026searchOpt=ALL\u0026searchTxt=","title":"양자정보과학 인적기반조성사업 리더급연구역량강..."},{"url":"https://www.msit.go.kr/bbs/view.do?sCode=user\u0026mId=310\u0026mPid=121\u0026pageIndex=\u0026bbsSeqNo=96\u0026nttSeqNo=3186566\u0026searchOpt=ALL\u0026searchTxt=","title":"2026년 제26회 올해의 여성과학기술인상 선정계획 ..."},{"url":"https://www.msit.go.kr/bbs/view.do?sCode=user\u0026mId=310\u0026mPid=121\u0026pageIndex=\u0026bbsSeqNo=96\u0026nttSeqNo=3186565\u0026searchOpt=ALL\u0026searchTxt=","title":"2026년 ‘제27회 전파방송 기술대상’ 모집 공고(..."},{"url":"https://www.msit.go.kr/bbs/view.do?sCode=user\u0026mId=310\u0026mPid=121\u0026pageIndex=\u0026bbsSeqNo=96\u0026nttSeqNo=3186564\u0026searchOpt=ALL\u0026searchTxt=","title":"2026년도 소프트웨어 산업발전 유공자 포상계획 연..."}],"name":"과학기술정보통신부"},{"ok":true,"posts":[{"url":"https://www.open.go.kr/com/main/mainView.do","title":"정보공개청구"},{"url":"https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=333\u0026boardSeq=106766\u0026lev=0\u0026searchType=null\u0026statusYN=W\u0026page=1\u0026s=moe\u0026m=020501\u0026opType=N","title":"교육부 소관 공인 민간자격 변경 승인 공고"},{"url":"https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=333\u0026boardSeq=106759\u0026lev=0\u0026searchType=null\u0026statusYN=W\u0026page=1\u0026s=moe\u0026m=020501\u0026opType=N","title":"제8회 교육 공공데이터 AI 활용대회 최종 수상작 안내"},{"url":"https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=333\u0026boardSeq=106758\u0026lev=0\u0026searchType=null\u0026statusYN=W\u0026page=1\u0026s=moe\u0026m=020501\u0026opType=N","title":"「2026년 보육 유공자」 정부포상 계획"},{"url":"https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=333\u0026boardSeq=106700\u0026lev=0\u0026searchType=null\u0026statusYN=W\u0026page=1\u0026s=moe\u0026m=020501\u0026opType=N","title":"2026년 민원서비스 종합평가 고충민원 만족도·신..."}],"name":"교육부"},{"ok":true,"posts":[{"url":"https://www.mofa.go.kr/www/brd/m_4075/view.do?seq=369410\u0026page=1\u0026pitem=10","title":"(기간연장) 제21회 대한민국 해외봉사상 후보자 공..."},{"url":"https://www.mofa.go.kr/www/brd/m_4075/view.do?seq=369429\u0026page=1\u0026pitem=10","title":"2026 정부혁신 유공 정부포상 후보자 공모"},{"url":"https://www.mofa.go.kr/www/brd/m_4075/view.do?seq=369426\u0026page=1\u0026pitem=10","title":"외교부 서포터스 모파랑(Friends of MOFA) 29기 모집"},{"url":"https://www.mofa.go.kr/www/brd/m_4075/view.do?seq=369425\u0026page=1\u0026pitem=10","title":"홈페이지 내 간편인증 기능 일시 중단 안내(7.10.(..."},{"url":"https://www.mofa.go.kr/www/brd/m_4075/view.do?seq=369420\u0026page=1\u0026pitem=10","title":"한국국제협력단(KOICA) 상임이사 공모"}],"name":"외교부"},{"ok":true,"posts":[{"url":"https://www.mois.go.kr/frt/bbs/type013/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000006\u0026nttId=128289","title":"2026 안전기술대상 수상 후보자 공개검증"},{"url":"https://www.mois.go.kr/frt/bbs/type013/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000006\u0026nttId=128287","title":"2026년 공직기강확립 유공 정부포상 후보자 공모"},{"url":"https://www.mois.go.kr/frt/bbs/type013/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000006\u0026nttId=128226","title":"하천계곡 관리시스템 명칭 공모"},{"url":"https://www.mois.go.kr/frt/bbs/type013/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000006\u0026nttId=128225","title":"하천계곡 불법시설 정비 \"우리하천이 청정하(천)계..."},{"url":"https://www.mois.go.kr/frt/bbs/type013/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000006\u0026nttId=128221","title":"2026년 사회연대경제 발전 유공(사회연대경제 활성..."}],"name":"행정안전부"},{"ok":true,"posts":[{"url":"https://www.mohw.go.kr/board.es?mid=a10501000000\u0026bid=0003\u0026act=view\u0026list_no=1491460\u0026tag=\u0026nPage=1","title":"새글 법률전문위원(변호사) 채용 면접시험 계획 공고"},{"url":"https://www.mohw.go.kr/board.es?mid=a10501000000\u0026bid=0003\u0026act=view\u0026list_no=1491452\u0026tag=\u0026nPage=1","title":"새글 보건복지부 제2차 청년인턴 채용 최종 합격자..."},{"url":"https://www.mohw.go.kr/board.es?mid=a10501000000\u0026bid=0003\u0026act=view\u0026list_no=1491438\u0026tag=\u0026nPage=1","title":"새글 보건복지부 전문임기제 다급(콘텐츠 제작) 공..."},{"url":"https://www.mohw.go.kr/board.es?mid=a10501000000\u0026bid=0003\u0026act=view\u0026list_no=1491437\u0026tag=\u0026nPage=1","title":"새글 2026년 장애인거주시설 인권실태 합동점검 수..."},{"url":"https://www.mohw.go.kr/board.es?mid=a10501000000\u0026bid=0003\u0026act=view\u0026list_no=1491433\u0026tag=\u0026nPage=1","title":"새글 2026년도 국립춘천병원 의무직공무원 경력경..."}],"name":"보건복지부"},{"ok":true,"posts":[{"url":"https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20260700774","title":"[공고] 제5회 고용노동 공공데이터·AI 활용 공모..."},{"url":"https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20260700745","title":"[공고] 한국장애인고용공단 비상임임원 공개모집"},{"url":"https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20260700693","title":"[공고] 한국사회적기업진흥원 비상임임원 공개모집"},{"url":"https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20260700691","title":"[공고] 고용노동부 2026년 정규 제3차 정책연구과..."},{"url":"https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20260700664","title":"[공고] 한국산업인력공단 임원(상임이사) 공개모집"}],"name":"고용노동부"},{"ok":true,"posts":[{"url":"https://www.molit.go.kr/USR/BORD0201/m_69/DTL.jsp?id=N01_B\u0026cate=\u0026mode=view\u0026idx=269125\u0026key=\u0026search=\u0026search_regdate_s=2025-07-30\u0026search_regdate_e=2026-07-30\u0026order=\u0026desc=asc\u0026srch_prc_stts=\u0026item_num=0\u0026search_dept_id=\u0026search_dept_nm=\u0026srch_usr_nm=N\u0026srch_usr_titl=N\u0026srch_usr_ctnt=N\u0026srch_mng_nm=N\u0026old_dept_nm=\u0026search_gbn=\u0026search_section=\u0026source=\u0026search1=\u0026lcmspage=1","title":"대구연호 공공주택지구 지구계획 변경(5차) 및 주..."},{"url":"https://www.molit.go.kr/USR/BORD0201/m_69/DTL.jsp?id=N01_B\u0026cate=\u0026mode=view\u0026idx=269124\u0026key=\u0026search=\u0026search_regdate_s=2025-07-30\u0026search_regdate_e=2026-07-30\u0026order=\u0026desc=asc\u0026srch_prc_stts=\u0026item_num=0\u0026search_dept_id=\u0026search_dept_nm=\u0026srch_usr_nm=N\u0026srch_usr_titl=N\u0026srch_usr_ctnt=N\u0026srch_mng_nm=N\u0026old_dept_nm=\u0026search_gbn=\u0026search_section=\u0026source=\u0026search1=\u0026lcmspage=1","title":"제주화북2 공공주택지구의 지정 변경(1차)"},{"url":"https://www.molit.go.kr/USR/BORD0201/m_69/DTL.jsp?id=N01_B\u0026cate=\u0026mode=view\u0026idx=269123\u0026key=\u0026search=\u0026search_regdate_s=2025-07-30\u0026search_regdate_e=2026-07-30\u0026order=\u0026desc=asc\u0026srch_prc_stts=\u0026item_num=0\u0026search_dept_id=\u0026search_dept_nm=\u0026srch_usr_nm=N\u0026srch_usr_titl=N\u0026srch_usr_ctnt=N\u0026srch_mng_nm=N\u0026old_dept_nm=\u0026search_gbn=\u0026search_section=\u0026source=\u0026search1=\u0026lcmspage=1","title":"공공주택건설 사업계획 승인 및 지형도면 등 고시(..."},{"url":"https://www.molit.go.kr/USR/BORD0201/m_69/DTL.jsp?id=N01_B\u0026cate=\u0026mode=view\u0026idx=269106\u0026key=\u0026search=\u0026search_regdate_s=2025-07-30\u0026search_regdate_e=2026-07-30\u0026order=\u0026desc=asc\u0026srch_prc_stts=\u0026item_num=0\u0026search_dept_id=\u0026search_dept_nm=\u0026srch_usr_nm=N\u0026srch_usr_titl=N\u0026srch_usr_ctnt=N\u0026srch_mng_nm=N\u0026old_dept_nm=\u0026search_gbn=\u0026search_section=\u0026source=\u0026search1=\u0026lcmspage=1","title":"부동산투자회사 영업인가 공고(㈜부산범천대한제64..."},{"url":"https://www.molit.go.kr/USR/BORD0201/m_69/DTL.jsp?id=N01_B\u0026cate=\u0026mode=view\u0026idx=269105\u0026key=\u0026search=\u0026search_regdate_s=2025-07-30\u0026search_regdate_e=2026-07-30\u0026order=\u0026desc=asc\u0026srch_prc_stts=\u0026item_num=0\u0026search_dept_id=\u0026search_dept_nm=\u0026srch_usr_nm=N\u0026srch_usr_titl=N\u0026srch_usr_ctnt=N\u0026srch_mng_nm=N\u0026old_dept_nm=\u0026search_gbn=\u0026search_section=\u0026source=\u0026search1=\u0026lcmspage=1","title":"부동산투자회사 영업인가 공고( ㈜신영지웰하나제1..."}],"name":"국토교통부"},{"ok":true,"posts":[{"url":"https://www.unikorea.go.kr/web/unikorea/bbs/bbs_0000000000000001/59724?cp=1\u0026pageSize=15\u0026sortOrder=BA_REGDATE\u0026sortDirection=DESC\u0026bcId=bbs_0000000000000001\u0026baNotice=false\u0026baCommSelec=false\u0026baOpenDay=false\u0026baUse=true","title":"2026년 통일부 공공데이터 개방 확대 및 활용 개선..."},{"url":"https://www.unikorea.go.kr/web/unikorea/bbs/bbs_0000000000000001/59720?cp=1\u0026pageSize=15\u0026sortOrder=BA_REGDATE\u0026sortDirection=DESC\u0026bcId=bbs_0000000000000001\u0026baNotice=false\u0026baCommSelec=false\u0026baOpenDay=false\u0026baUse=true","title":"비영리법인 설립허가 취소 처분 청문 실시 통지"},{"url":"https://www.unikorea.go.kr/web/unikorea/bbs/bbs_0000000000000001/59718?cp=1\u0026pageSize=15\u0026sortOrder=BA_REGDATE\u0026sortDirection=DESC\u0026bcId=bbs_0000000000000001\u0026baNotice=false\u0026baCommSelec=false\u0026baOpenDay=false\u0026baUse=true","title":"공공기관 종합청렴도 평가 관련 개인정보 제3자 제..."},{"url":"https://www.unikorea.go.kr/web/unikorea/bbs/bbs_0000000000000001/59717?cp=1\u0026pageSize=15\u0026sortOrder=BA_REGDATE\u0026sortDirection=DESC\u0026bcId=bbs_0000000000000001\u0026baNotice=false\u0026baCommSelec=false\u0026baOpenDay=false\u0026baUse=true","title":"｢디지털·AI 환경변화에 따른 교류협력 법제도 정..."},{"url":"https://www.unikorea.go.kr/web/unikorea/bbs/bbs_0000000000000001/59714?cp=1\u0026pageSize=15\u0026sortOrder=BA_REGDATE\u0026sortDirection=DESC\u0026bcId=bbs_0000000000000001\u0026baNotice=false\u0026baCommSelec=false\u0026baOpenDay=false\u0026baUse=true","title":"｢한반도 평화공존센터 건립사업｣ 설계용역 지명..."}],"name":"통일부"},{"ok":true,"posts":[{"url":"https://www.moj.go.kr/bbs/moj/184/608844/artclView.do","title":"[출입국ㆍ외국인정책본부] 제1기 「난민참여자문단..."},{"url":"https://www.moj.go.kr/bbs/moj/184/608784/artclView.do","title":"2026년 공익법무관 정기 인사(2026. 8. 1.자)"},{"url":"https://www.moj.go.kr/bbs/moj/184/608770/artclView.do","title":"제2회 법무부 교정본부 홍보 콘텐츠 공모전 실시 안내"},{"url":"https://www.moj.go.kr/bbs/moj/184/608587/artclView.do","title":"2026년도 공공기관 종합청렴도 평가 관련 개인정보..."},{"url":"https://www.moj.go.kr/bbs/moj/184/608339/artclView.do","title":"[출입국ㆍ외국인정책본부] 2026년 의료관광 우수 ..."}],"name":"법무부"},{"ok":true,"posts":[{"url":"https://www.mnd.go.kr/bbs/mnd/11066/I_14052987/artclView.do","title":"\u003c 상비예비군 모집 관련 신원조사 안내 \u003e"},{"url":"https://www.mnd.go.kr/bbs/mnd/11066/I_14052402/artclView.do","title":"2026년 군 인권 홍보 콘텐츠 공모전 안내"},{"url":"https://www.mnd.go.kr/bbs/mnd/11066/I_14046383/artclView.do","title":"군 부사관 암 치료비 지원사업(대한암협회 주관, ..."},{"url":"https://www.mnd.go.kr/bbs/mnd/11066/I_14046221/artclView.do","title":"군 장병·가족 통합지원사업(하나금융그룹 후원) 안내"},{"url":"https://www.mnd.go.kr/bbs/mnd/11066/I_14042996/artclView.do","title":"(육군)\u002726년 상비예비군 장기 3차 수시 선발 결과"}],"name":"국방부"},{"ok":true,"posts":[{"url":"https://www.mpva.go.kr/mpva/selectBbsNttView.do?key=76\u0026bbsNo=15\u0026nttNo=274593","title":"준보훈병원 선정 결과 공고"},{"url":"https://www.mpva.go.kr/mpva/selectBbsNttView.do?key=76\u0026bbsNo=15\u0026nttNo=274585","title":"제27회 보훈문화상 시상계획 공고"},{"url":"https://www.mpva.go.kr/mpva/selectBbsNttView.do?key=76\u0026bbsNo=15\u0026nttNo=274558","title":"국립대한민국임시정부기념관 2026년 제3차 공개구..."},{"url":"https://www.mpva.go.kr/mpva/selectBbsNttView.do?key=76\u0026bbsNo=15\u0026nttNo=274544","title":"과반수 노동조합에 대한 공고"},{"url":"https://www.mpva.go.kr/mpva/selectBbsNttView.do?key=76\u0026bbsNo=15\u0026nttNo=274509","title":"국립효창독립공원 조성사업 주민설명회 개최 계획 ..."}],"name":"국가보훈부"},{"ok":true,"posts":[{"url":"https://www.mcst.go.kr/kor/s_notice/notice/noticeView.jsp?pSeq=19403","title":"2026년 전시정보 수어영상 제작 지원 사업 참여기..."},{"url":"https://www.mcst.go.kr/kor/s_notice/notice/noticeView.jsp?pSeq=19400","title":"제3회 대한민국 저작권 보호 대상 포상 후보자 추..."},{"url":"https://www.mcst.go.kr/kor/s_notice/notice/noticeView.jsp?pSeq=19395","title":"2026년도 광고산업 발전 유공 정부포상 후보자 추..."},{"url":"https://www.mcst.go.kr/kor/s_notice/notice/noticeView.jsp?pSeq=19398","title":"민간자격 등록폐지 공고"},{"url":"https://www.mcst.go.kr/kor/s_notice/notice/noticeView.jsp?pSeq=19396","title":"2026 어르신 스포츠강좌 프로그램 지원 4차공모 선..."}],"name":"문화체육관광부"},{"ok":true,"posts":[{"url":"https://www.mafra.go.kr/bbs/home/791/578573/artclView.do","title":"사단법인 대한산란계협회 설립허가취소 공고"},{"url":"https://www.mafra.go.kr/bbs/home/791/578557/artclView.do","title":"비영리법인 해산 공고((사)한베미래세대교류본부)"},{"url":"https://www.mafra.go.kr/bbs/home/791/578555/artclView.do","title":"농림식품신기술(NET)인증제 2026년도 상반기 인증 ..."},{"url":"https://www.mafra.go.kr/bbs/home/791/578544/artclView.do","title":"2026년도 하반기 혁신제품 지정제도 시행계획 공고"},{"url":"https://www.mafra.go.kr/bbs/home/791/578531/artclView.do","title":"농식품 바우처 사업 전담기관 공모"}],"name":"농림축산식품부"},{"ok":true,"posts":[{"url":"https://www.motir.go.kr/kor/article/ATCL6e90bb9de/4475337/view?mno=\u0026pageIndex=1\u0026rowPageC=0\u0026displayAuthor=\u0026searchCategory=0\u0026schClear=on\u0026startDtD=\u0026endDtD=\u0026searchCondition=1\u0026searchKeyword=","title":"공공기관 종합청렴도 평가 관련 개인정보 제3자 제..."},{"url":"https://www.motir.go.kr/kor/article/ATCL6e90bb9de/4475336/view?mno=\u0026pageIndex=1\u0026rowPageC=0\u0026displayAuthor=\u0026searchCategory=0\u0026schClear=on\u0026startDtD=\u0026endDtD=\u0026searchCondition=1\u0026searchKeyword=","title":"인사발령(과장급 승진 등)"},{"url":"https://www.motir.go.kr/kor/article/ATCL6e90bb9de/4475335/view?mno=\u0026pageIndex=1\u0026rowPageC=0\u0026displayAuthor=\u0026searchCategory=0\u0026schClear=on\u0026startDtD=\u0026endDtD=\u0026searchCondition=1\u0026searchKeyword=","title":"인사발령(국장급 승진 등)"},{"url":"https://www.motir.go.kr/kor/article/ATCL6e90bb9de/4475334/view?mno=\u0026pageIndex=1\u0026rowPageC=0\u0026displayAuthor=\u0026searchCategory=0\u0026schClear=on\u0026startDtD=\u0026endDtD=\u0026searchCondition=1\u0026searchKeyword=","title":"인사발령(과장급 승진)"},{"url":"https://www.motir.go.kr/kor/article/ATCL6e90bb9de/4475333/view?mno=\u0026pageIndex=1\u0026rowPageC=0\u0026displayAuthor=\u0026searchCategory=0\u0026schClear=on\u0026startDtD=\u0026endDtD=\u0026searchCondition=1\u0026searchKeyword=","title":"인사발령(실장급 퇴직 등)"}],"name":"산업통상부"},{"ok":true,"posts":[{"url":"https://mcee.go.kr/home/web/board/read.do?pagerOffset=0\u0026maxPageItems=10\u0026maxIndexPages=10\u0026searchKey=\u0026searchValue=\u0026menuId=10524\u0026orgCd=\u0026boardId=1880370\u0026boardMasterId=39\u0026boardCategoryId=\u0026decorator=","title":"2026년 환경형 예비사회적기업 지정계획 공고"},{"url":"https://mcee.go.kr/home/web/board/read.do?pagerOffset=0\u0026maxPageItems=10\u0026maxIndexPages=10\u0026searchKey=\u0026searchValue=\u0026menuId=10524\u0026orgCd=\u0026boardId=1879880\u0026boardMasterId=39\u0026boardCategoryId=\u0026decorator=","title":"유해화학물질 영업허가 취소처분 공고"},{"url":"https://mcee.go.kr/home/web/board/read.do?pagerOffset=0\u0026maxPageItems=10\u0026maxIndexPages=10\u0026searchKey=\u0026searchValue=\u0026menuId=10524\u0026orgCd=\u0026boardId=1874390\u0026boardMasterId=39\u0026boardCategoryId=\u0026decorator=","title":"2026년 생태관광지역 신규 지정계획 공고"},{"url":"https://mcee.go.kr/home/web/board/read.do?pagerOffset=0\u0026maxPageItems=10\u0026maxIndexPages=10\u0026searchKey=\u0026searchValue=\u0026menuId=10524\u0026orgCd=\u0026boardId=1880690\u0026boardMasterId=39\u0026boardCategoryId=\u0026decorator=","title":"2026년 AI기반 분산에너지 특화지역 지원사업 수정..."},{"url":"https://mcee.go.kr/home/web/board/read.do?pagerOffset=0\u0026maxPageItems=10\u0026maxIndexPages=10\u0026searchKey=\u0026searchValue=\u0026menuId=10524\u0026orgCd=\u0026boardId=1880530\u0026boardMasterId=39\u0026boardCategoryId=\u0026decorator=","title":"「제13회 대학생 물환경 정책?기술 공모전」 입찰 ..."}],"name":"기후에너지환경부"},{"ok":true,"posts":[{"url":"https://www.mogef.go.kr/nw/ntc/nw_ntc_s001d.do?mid=news400\u0026bbtSn=711235","title":"성평등가족부 전문임기제 나급(인공지능 기획) 경..."},{"url":"https://www.mogef.go.kr/nw/ntc/nw_ntc_s001d.do?mid=news400\u0026bbtSn=711234","title":"성평등가족부 하반기 1차 청년인턴 최종합격자 공고"},{"url":"https://www.mogef.go.kr/nw/ntc/nw_ntc_s001d.do?mid=news400\u0026bbtSn=711219","title":"성평등가족부 국가직5급(행정·방재안전) 전입희망..."},{"url":"https://www.mogef.go.kr/nw/ntc/nw_ntc_s001d.do?mid=news400\u0026bbtSn=711209","title":"성평등가족부 일반직공무원(6·7급) 전입시험 최종..."},{"url":"https://www.mogef.go.kr/nw/ntc/nw_ntc_s001d.do?mid=news400\u0026bbtSn=711208","title":"2026년 성평등가족부 하반기 1차 채용 서류전형 합..."}],"name":"성평등가족부"},{"ok":true,"posts":[{"url":"https://www.mof.go.kr/doc/ko/selectDoc.do?docSeq=55901\u0026menuSeq=375\u0026bbsSeq=9","title":"2024년 재검토기한 도래 심사대상 목록 공개 및 의..."},{"url":"https://www.mof.go.kr/doc/ko/selectDoc.do?docSeq=46962\u0026menuSeq=375\u0026bbsSeq=9","title":"외국인 선원 무단이탈 선박 등의 무역항 출입허가 ..."},{"url":"https://www.mof.go.kr/doc/ko/selectDoc.do?docSeq=67635\u0026menuSeq=375\u0026bbsSeq=9","title":"2026년 교통약자 승하선 편의시설 지원사업 공모(2차)"},{"url":"https://www.mof.go.kr/doc/ko/selectDoc.do?docSeq=67604\u0026menuSeq=375\u0026bbsSeq=9","title":"2026년 여성어업인 유공 정부포상 후보자 공모"},{"url":"https://www.mof.go.kr/doc/ko/selectDoc.do?docSeq=67586\u0026menuSeq=375\u0026bbsSeq=9","title":"2026년 친환경인증선박 보급지원사업 제2차 공고"}],"name":"해양수산부"},{"ok":true,"posts":[{"url":"https://www.mss.go.kr/site/smba/ex/bbs/View.do?cbIdx=81\u0026bcIdx=1070092\u0026parentSeq=1070092","title":"교섭요구 노동조합 확정 공고"},{"url":"https://www.mss.go.kr/site/smba/ex/bbs/View.do?cbIdx=81\u0026bcIdx=1070087\u0026parentSeq=1070087","title":"26년도 중소벤처기업부 대표 누리집 만족도 조사 ..."},{"url":"https://www.mss.go.kr/site/smba/ex/bbs/View.do?cbIdx=81\u0026bcIdx=1069997\u0026parentSeq=1069997","title":"중소벤처기업부 누리집 시스템 점검에 따른 서비스..."},{"url":"https://www.mss.go.kr/site/smba/ex/bbs/View.do?cbIdx=81\u0026bcIdx=1069927\u0026parentSeq=1069927","title":"단체교섭 요구사실 공고"},{"url":"https://www.mss.go.kr/site/smba/ex/bbs/View.do?cbIdx=81\u0026bcIdx=1069510\u0026parentSeq=1069510","title":"중소벤처기업부 누리집 점검 작업 안내 (7월9일 19..."}],"name":"중소벤처기업부"},{"ok":true,"posts":[{"url":"https://www.mpb.go.kr/web/main/bbs/b_0016/2112?cp=1\u0026sortOrder=BA_REGDATE\u0026sortDirection=DESC\u0026bcId=b_0016\u0026baNotice=false\u0026baCommSelec=false\u0026baOpenDay=false\u0026baUse=true","title":"「2026년 민원서비스 종합평가」 고충민원 만족도..."},{"url":"https://www.mpb.go.kr/web/main/bbs/b_0016/1844?cp=1\u0026sortOrder=BA_REGDATE\u0026sortDirection=DESC\u0026bcId=b_0016\u0026baNotice=false\u0026baCommSelec=false\u0026baOpenDay=false\u0026baUse=true","title":"2026년 상반기 모범공무원 포상 후보자 공개검증"},{"url":"https://www.mpb.go.kr/web/main/bbs/b_0016/1779?cp=1\u0026sortOrder=BA_REGDATE\u0026sortDirection=DESC\u0026bcId=b_0016\u0026baNotice=false\u0026baCommSelec=false\u0026baOpenDay=false\u0026baUse=true","title":"2026년 대한민국 공무원상 포상 후보자 공개검증"},{"url":"https://www.mpb.go.kr/web/main/bbs/b_0016/1757?cp=1\u0026sortOrder=BA_REGDATE\u0026sortDirection=DESC\u0026bcId=b_0016\u0026baNotice=false\u0026baCommSelec=false\u0026baOpenDay=false\u0026baUse=true","title":"2026년 기획예산처 적극행정 모니터링단 모집"},{"url":"https://www.mpb.go.kr/web/main/bbs/b_0016/1720?cp=1\u0026sortOrder=BA_REGDATE\u0026sortDirection=DESC\u0026bcId=b_0016\u0026baNotice=false\u0026baCommSelec=false\u0026baOpenDay=false\u0026baUse=true","title":"기획예산처 소속 위원회 현황(\u002726년 1분기 기준)"}],"name":"기획예산처"},{"ok":true,"posts":[{"url":"https://www.mpm.go.kr/mpm/comm/noti/newsNoitice/?boardId=bbs_0000000000000020\u0026mode=view\u0026cntId=1899\u0026category=\u0026pageIdx=","title":"2026년 공직문학상 1차심사 결과 안내"},{"url":"https://www.mpm.go.kr/mpm/comm/noti/newsNoitice/?boardId=bbs_0000000000000020\u0026mode=view\u0026cntId=1898\u0026category=\u0026pageIdx=","title":"2026년 퇴직공무원 사회공헌사업(Know-how+) 참가..."},{"url":"https://www.mpm.go.kr/mpm/comm/noti/newsNoitice/?boardId=bbs_0000000000000020\u0026mode=view\u0026cntId=1897\u0026category=\u0026pageIdx=","title":"2026년도 공공기관 종합청렴도 평가 관련 개인정보..."},{"url":"https://www.mpm.go.kr/mpm/comm/noti/newsNoitice/?boardId=bbs_0000000000000020\u0026mode=view\u0026cntId=1896\u0026category=\u0026pageIdx=","title":"인사혁신처 경력경쟁채용시험 채용 공고(일반행정6..."},{"url":"https://www.mpm.go.kr/mpm/comm/noti/newsNoitice/?boardId=bbs_0000000000000020\u0026mode=view\u0026cntId=1895\u0026category=\u0026pageIdx=","title":"(공고문) ｢2026년 민원서비스 종합평가」고충민원..."}],"name":"인사혁신처"},{"ok":true,"posts":[{"url":"https://www.moleg.go.kr/board.es?mid=a10504000000\u0026bid=0010\u0026act=view\u0026list_no=154181\u0026tag=\u0026pageCntBySelf=10\u0026nPage=1\u0026keyField=\u0026keyWord=\u0026cg_code=","title":"새글 [법제처 공고 제2026-109호] 법제처 일반임기..."},{"url":"https://www.moleg.go.kr/board.es?mid=a10504000000\u0026bid=0010\u0026act=view\u0026list_no=153641\u0026tag=\u0026pageCntBySelf=10\u0026nPage=1\u0026keyField=\u0026keyWord=\u0026cg_code=","title":"새글 [법제처 공고 제2026-108호] 법제처 법제정보..."},{"url":"https://www.moleg.go.kr/board.es?mid=a10504000000\u0026bid=0010\u0026act=view\u0026list_no=153345\u0026tag=\u0026pageCntBySelf=10\u0026nPage=1\u0026keyField=\u0026keyWord=\u0026cg_code=","title":"[법제처 공고 제2026-107호] 2026년도 세계법제정..."},{"url":"https://www.moleg.go.kr/board.es?mid=a10504000000\u0026bid=0010\u0026act=view\u0026list_no=153136\u0026tag=\u0026pageCntBySelf=10\u0026nPage=1\u0026keyField=\u0026keyWord=\u0026cg_code=","title":"[법제처 공고 제2026-106호] 법제처 공무직 근로자..."},{"url":"https://www.moleg.go.kr/board.es?mid=a10504000000\u0026bid=0010\u0026act=view\u0026list_no=153086\u0026tag=\u0026pageCntBySelf=10\u0026nPage=1\u0026keyField=\u0026keyWord=\u0026cg_code=","title":"[법제처 공고 제2026-105호] 법제처 법제정보지원..."}],"name":"법제처"},{"ok":true,"posts":[{"url":"https://www.mfds.go.kr/usr/opendata_17/openApiView.do","title":"정보공개 목록"},{"url":"https://mfds.go.kr/qustnr/1/view.do?cntnLoctInfo=survery20220401\u0026title=알림/소식\u0026qustnrSn=141\u0026srchFr=\u0026srchTo=\u0026srchTp=\u0026srchWord=","title":"알림/소식\u0026qustnrSn=141\u0026srchFr=\u0026srchTo=\u0026srchTp=\u0026..."},{"url":"https://www.mfds.go.kr/brd/m_689/view.do?seq=30\u0026srchFr=\u0026srchTo=\u0026srchWord=\u0026srchTp=\u0026itm_seq_1=0\u0026itm_seq_2=0\u0026multi_itm_seq=0\u0026company_cd=\u0026company_nm=\u0026page=1","title":"2026년 적극행정 모니터링단 모집"},{"url":"https://www.mfds.go.kr/brd/m_689/view.do?seq=27\u0026srchFr=\u0026srchTo=\u0026srchWord=\u0026srchTp=\u0026itm_seq_1=0\u0026itm_seq_2=0\u0026multi_itm_seq=0\u0026company_cd=\u0026company_nm=\u0026page=1","title":"2025년 적극행정 모니터링단 모집"},{"url":"https://www.mfds.go.kr/brd/m_689/view.do?seq=26\u0026srchFr=\u0026srchTo=\u0026srchWord=\u0026srchTp=\u0026itm_seq_1=0\u0026itm_seq_2=0\u0026multi_itm_seq=0\u0026company_cd=\u0026company_nm=\u0026page=1","title":"2024년 제9회 적극행정위원회 심의 결과"}],"name":"식품의약품안전처"}]}
+  </script>
+
+  <script>
+    const PALETTE = [
+      { head: '#3a7bd5', body: '#eff6ff', border: '#265aaa' },
+      { head: '#667eea', body: '#f3f0ff', border: '#4c60be' },
+      { head: '#009688', body: '#e8f5e9', border: '#00796b' },
+      { head: '#ff7043', body: '#fff3e0', border: '#e65100' },
+      { head: '#7e57c2', body: '#f5f0ff', border: '#5e35b1' },
+      { head: '#2e7d32', body: '#edf7ed', border: '#1b5e20' },
+      { head: '#c62828', body: '#ffebee', border: '#b71c1c' },
+      { head: '#0079bf', body: '#ecf8ff', border: '#005a8c' }
+    ];
+    const MOTIR = { head: '#ff8c00', body: '#fff3e0', border: '#e66e00' };
+
+    function colorFor(name) {
+      if (name === '산업통상부') return MOTIR;
+      let idx = 0;
+      for (let i = 0; i < name.length; i++) idx = (idx + name.charCodeAt(i)) % 8;
+      return PALETTE[idx];
+    }
+
+    function esc(s) {
+      return String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function render(data) {
+      const board = document.getElementById('board');
+      const meta = document.getElementById('metaLine');
+      const collected = data.collectedAt || '-';
+      const depts = Array.isArray(data.departments) ? data.departments : [];
+      meta.textContent =
+        '수집시각: ' + collected + '  |  부처 ' + depts.length + '개  |  카드 4단  |  제목 클릭 시 새 창';
+
+      if (!depts.length) {
+        board.innerHTML = '<div class="empty">표시할 공지 데이터가 없습니다.</div>';
+        return;
+      }
+
+      board.innerHTML = depts.map(function (d) {
+        const c = colorFor(d.name);
+        const head = '[' + esc(d.name) + ']';
+        if (d.ok === false || !d.posts || !d.posts.length) {
+          return '<article class="card" style="border-color:' + c.border + '">' +
+            '<div class="card-head" style="background:' + c.head + '">' + head + '</div>' +
+            '<div class="fail">설정 페이지를 수정하세요.</div></article>';
+        }
+        const items = d.posts.slice(0, 5).map(function (p, i) {
+          return '<div class="item" style="background:' + c.body + '">' +
+            '<div class="num">' + (i + 1) + '.</div>' +
+            '<a class="title" href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer" title="' + esc(p.title) + '">' +
+            esc(p.title) + '</a></div>';
+        }).join('');
+        return '<article class="card" style="border-color:' + c.border + '">' +
+          '<div class="card-head" style="background:' + c.head + '">' + head + '</div>' +
+          '<div class="card-body">' + items + '</div></article>';
+      }).join('');
+    }
+
+    function load() {
+      const raw = document.getElementById('notice-data').textContent.trim();
+      let data = { collectedAt: '', departments: [] };
+      try {
+        if (raw && raw.charAt(0) === '{') data = JSON.parse(raw);
+      } catch (e) {
+        console.error(e);
+      }
+      render(data);
+    }
+
+    document.getElementById('btnReload').addEventListener('click', function () {
+      location.reload();
+    });
+    load();
+  </script>
+</body>
+</html>

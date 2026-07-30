@@ -1,0 +1,7 @@
+*
+!*.xlsm
+!*.xlsx
+!*.xls
+!*.html
+!*.htm
+!.gitignore

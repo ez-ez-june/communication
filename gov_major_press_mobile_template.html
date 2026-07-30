@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>주요부처 공지·보도자료 함께보기 (모바일)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-low": "#f3f3fe","secondary-fixed": "#ffdbca","inverse-on-surface": "#f0f0fb",
+              "surface-variant": "#e1e2ed","primary-fixed-dim": "#b4c5ff","surface-container": "#ededf9",
+              "surface-container-high": "#e7e7f3","primary-fixed": "#dbe1ff","on-tertiary": "#ffffff",
+              "on-secondary": "#ffffff","secondary-container": "#fd761a","surface-container-lowest": "#ffffff",
+              "primary-container": "#2563eb","error-container": "#ffdad6","primary": "#004ac6",
+              "tertiary-container": "#bc4800","surface-dim": "#d9d9e5","outline": "#737686",
+              "on-surface-variant": "#434655","on-surface": "#191b23","secondary": "#9d4300",
+              "surface-container-highest": "#e1e2ed","background": "#faf8ff","outline-variant": "#c3c6d7",
+              "on-background": "#191b23","tertiary": "#943700","error": "#ba1a1a","on-primary": "#ffffff",
+              "on-primary-container": "#eeefff","on-tertiary-container": "#ffede6","surface": "#faf8ff"
+            },
+            borderRadius: { DEFAULT:"0.25rem", lg:"0.5rem", xl:"0.75rem", full:"9999px" },
+            spacing: { "container-padding":"2rem", "card-padding":"1rem" },
+            fontFamily: { "header-title":["Public Sans"], "list-item":["Public Sans"], "button-text":["Public Sans"], "meta-data":["Public Sans"], "board-title":["Public Sans"] },
+            fontSize: {
+              "header-title":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],
+              "list-item":["14px",{"lineHeight":"20px","fontWeight":"500"}],
+              "button-text":["14px",{"lineHeight":"20px","fontWeight":"600"}],
+              "meta-data":["12px",{"lineHeight":"16px","fontWeight":"400"}],
+              "board-title":["16px",{"lineHeight":"24px","fontWeight":"700"}]
+            }
+          }
+        }
+      }
+</script>
+<style>
+.material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+body { font-family:'Public Sans',sans-serif; }
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<header class="bg-primary text-on-primary fixed top-0 left-0 right-0 z-50 rounded-b-xl shadow-md">
+<div class="flex flex-col justify-between items-stretch px-4 py-5 w-full gap-3">
+<div class="flex justify-between items-center">
+<h1 class="font-header-title text-header-title">★주요부처★ 함께보기</h1>
+<button id="btnReload" type="button" class="font-button-text text-button-text flex items-center gap-1 p-2 rounded-lg hover:bg-primary-container/20">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+</div>
+<a href="gov_notice_board_mobile.html" class="text-on-primary/90 font-meta-data text-meta-data no-underline">← 모바일 공지 보드</a>
+</div>
+</header>
+
+<div class="mt-28 px-4 mb-4">
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-3 flex justify-between items-center">
+<div class="flex flex-col">
+<span class="font-meta-data text-meta-data text-on-surface-variant">업데이트 시간</span>
+<span class="font-list-item text-list-item text-on-surface" id="metaTime">-</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-meta-data text-meta-data text-on-surface-variant">부처 수</span>
+<span class="font-list-item text-list-item text-on-surface font-bold">★주요부처 4개★</span>
+</div>
+</div>
+</div>
+
+<main class="px-4 pb-24 grid grid-cols-1 gap-6" id="board"></main>
+
+<footer class="bg-surface-dim text-on-surface-variant border-t border-outline-variant w-full py-4 px-4 flex flex-col items-center gap-3 mt-auto">
+<p class="font-meta-data text-meta-data">© 대한민국 정부 주요부처 보드</p>
+<a class="font-meta-data text-meta-data no-underline hover:text-primary" href="gov_major_press_board.html">PC 함께보기</a>
+</footer>
+
+<script id="major-data" type="application/json">
+%%MAJOR_JSON%%
+</script>
+<script>
+(function () {
+  const META = {
+    '산업통상부': { color:'#2563eb', icon:'factory' },
+    '기후에너지환경부': { color:'#bc4800', icon:'eco' },
+    '고용노동부': { color:'#9d4300', icon:'groups' },
+    '외교부': { color:'#004ac6', icon:'public' }
+  };
+  const ORDER = ['산업통상부','기후에너지환경부','고용노동부','외교부'];
+  function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function itemsHtml(arr, colorClass) {
+    const list = (arr||[]).slice(0,5);
+    if (!list.length) return '<li class="p-3 text-on-surface-variant font-meta-data text-meta-data">항목 없음</li>';
+    return list.map(function(p,i){
+      return '<li class="p-3 font-list-item text-list-item flex gap-3 items-start rounded-lg">' +
+        '<span class="font-bold ' + colorClass + '">' + (i+1) + '</span>' +
+        '<a class="line-clamp-2 text-on-surface no-underline" href="' + esc(p.url||'#') + '" target="_blank" rel="noopener noreferrer">' + esc(p.title) + '</a></li>';
+    }).join('');
+  }
+  function toggleTab(btn, showId, hideId) {
+    const container = btn.parentElement;
+    container.querySelectorAll('button').forEach(function(b){
+      b.classList.remove('border-primary','text-primary');
+      b.classList.add('border-transparent','text-on-surface-variant');
+    });
+    btn.classList.add('border-primary','text-primary');
+    btn.classList.remove('border-transparent','text-on-surface-variant');
+    document.getElementById(showId).classList.remove('hidden');
+    document.getElementById(showId).classList.add('block');
+    document.getElementById(hideId).classList.add('hidden');
+    document.getElementById(hideId).classList.remove('block');
+  }
+  window.toggleTab = toggleTab;
+  function render(data) {
+    document.getElementById('metaTime').textContent = data.collectedAt || '-';
+    const map = {};
+    (data.departments||[]).forEach(function(d){ map[d.name]=d; });
+    const depts = ORDER.map(function(n){ return map[n] || { name:n, notices:[], press:[] }; });
+    document.getElementById('board').innerHTML = depts.map(function(d, idx){
+      const m = META[d.name] || { color:'#004ac6', icon:'star' };
+      const nid = 'notice-' + idx;
+      const pid = 'press-' + idx;
+      return '<article class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] overflow-hidden">' +
+        '<header class="p-4 flex justify-between items-center text-white" style="background:' + m.color + '">' +
+        '<h2 class="font-board-title text-board-title">' + esc(d.name) + '</h2>' +
+        '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1;">star</span></header>' +
+        '<div class="p-0"><div class="flex border-b border-outline-variant">' +
+        '<button type="button" class="flex-1 py-3 font-button-text text-button-text border-b-2 border-primary text-primary" onclick="toggleTab(this,\'' + nid + '\',\'' + pid + '\')">공지사항</button>' +
+        '<button type="button" class="flex-1 py-3 font-button-text text-button-text border-b-2 border-transparent text-on-surface-variant" onclick="toggleTab(this,\'' + pid + '\',\'' + nid + '\')">보도자료</button>' +
+        '</div>' +
+        '<ul class="divide-y divide-primary/10 p-2 block" id="' + nid + '">' + itemsHtml(d.notices, 'text-primary') + '</ul>' +
+        '<ul class="divide-y divide-primary/10 p-2 hidden" id="' + pid + '">' + itemsHtml(d.press, 'text-secondary') + '</ul>' +
+        '</div></article>';
+    }).join('');
+  }
+  function load(){
+    const raw = document.getElementById('major-data').textContent.trim();
+    let data = { collectedAt:'', departments:[] };
+    try { if (raw && raw.charAt(0)==='{') data = JSON.parse(raw); } catch(e){ console.error(e); }
+    render(data);
+  }
+  document.getElementById('btnReload').addEventListener('click', function(){ location.reload(); });
+  load();
+})();
+</script>
+</body>
+</html>

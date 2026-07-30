@@ -1,0 +1,148 @@
+﻿<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>주요부처 공지·보도자료 함께보기 (모바일)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-low": "#f3f3fe","secondary-fixed": "#ffdbca","inverse-on-surface": "#f0f0fb",
+              "surface-variant": "#e1e2ed","primary-fixed-dim": "#b4c5ff","surface-container": "#ededf9",
+              "surface-container-high": "#e7e7f3","primary-fixed": "#dbe1ff","on-tertiary": "#ffffff",
+              "on-secondary": "#ffffff","secondary-container": "#fd761a","surface-container-lowest": "#ffffff",
+              "primary-container": "#2563eb","error-container": "#ffdad6","primary": "#004ac6",
+              "tertiary-container": "#bc4800","surface-dim": "#d9d9e5","outline": "#737686",
+              "on-surface-variant": "#434655","on-surface": "#191b23","secondary": "#9d4300",
+              "surface-container-highest": "#e1e2ed","background": "#faf8ff","outline-variant": "#c3c6d7",
+              "on-background": "#191b23","tertiary": "#943700","error": "#ba1a1a","on-primary": "#ffffff",
+              "on-primary-container": "#eeefff","on-tertiary-container": "#ffede6","surface": "#faf8ff"
+            },
+            borderRadius: { DEFAULT:"0.25rem", lg:"0.5rem", xl:"0.75rem", full:"9999px" },
+            spacing: { "container-padding":"2rem", "card-padding":"1rem" },
+            fontFamily: { "header-title":["Public Sans"], "list-item":["Public Sans"], "button-text":["Public Sans"], "meta-data":["Public Sans"], "board-title":["Public Sans"] },
+            fontSize: {
+              "header-title":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],
+              "list-item":["14px",{"lineHeight":"20px","fontWeight":"500"}],
+              "button-text":["14px",{"lineHeight":"20px","fontWeight":"600"}],
+              "meta-data":["12px",{"lineHeight":"16px","fontWeight":"400"}],
+              "board-title":["16px",{"lineHeight":"24px","fontWeight":"700"}]
+            }
+          }
+        }
+      }
+</script>
+<style>
+.material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+body { font-family:'Public Sans',sans-serif; }
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<header class="bg-primary text-on-primary fixed top-0 left-0 right-0 z-50 rounded-b-xl shadow-md">
+<div class="flex flex-col justify-between items-stretch px-4 py-5 w-full gap-3">
+<div class="flex justify-between items-center">
+<h1 class="font-header-title text-header-title">★주요부처★ 함께보기</h1>
+<button id="btnReload" type="button" class="font-button-text text-button-text flex items-center gap-1 p-2 rounded-lg hover:bg-primary-container/20">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+</div>
+<a href="gov_notice_board_mobile.html" class="text-on-primary/90 font-meta-data text-meta-data no-underline">← 모바일 공지 보드</a>
+</div>
+</header>
+
+<div class="mt-28 px-4 mb-4">
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-3 flex justify-between items-center">
+<div class="flex flex-col">
+<span class="font-meta-data text-meta-data text-on-surface-variant">업데이트 시간</span>
+<span class="font-list-item text-list-item text-on-surface" id="metaTime">-</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-meta-data text-meta-data text-on-surface-variant">부처 수</span>
+<span class="font-list-item text-list-item text-on-surface font-bold">★주요부처 4개★</span>
+</div>
+</div>
+</div>
+
+<main class="px-4 pb-24 grid grid-cols-1 gap-6" id="board"></main>
+
+<footer class="bg-surface-dim text-on-surface-variant border-t border-outline-variant w-full py-4 px-4 flex flex-col items-center gap-3 mt-auto">
+<p class="font-meta-data text-meta-data">© 대한민국 정부 주요부처 보드</p>
+<a class="font-meta-data text-meta-data no-underline hover:text-primary" href="gov_major_press_board.html">PC 함께보기</a>
+</footer>
+
+<script id="major-data" type="application/json">
+{"collectedAt":"2026-07-30 12:16:37","departments":[{"name":"산업통상부","ok":true,"notices":[{"title":"공공기관 종합청렴도 평가 관련 개인정보 제3자 제...","url":"https://www.motir.go.kr/kor/article/ATCL6e90bb9de/4475337/view?mno=&pageIndex=1&rowPageC=0&displayAuthor=&searchCategory=0&schClear=on&startDtD=&endDtD=&searchCondition=1&searchKeyword="},{"title":"인사발령(과장급 승진 등)","url":"https://www.motir.go.kr/kor/article/ATCL6e90bb9de/4475336/view?mno=&pageIndex=1&rowPageC=0&displayAuthor=&searchCategory=0&schClear=on&startDtD=&endDtD=&searchCondition=1&searchKeyword="},{"title":"인사발령(국장급 승진 등)","url":"https://www.motir.go.kr/kor/article/ATCL6e90bb9de/4475335/view?mno=&pageIndex=1&rowPageC=0&displayAuthor=&searchCategory=0&schClear=on&startDtD=&endDtD=&searchCondition=1&searchKeyword="},{"title":"인사발령(과장급 승진)","url":"https://www.motir.go.kr/kor/article/ATCL6e90bb9de/4475334/view?mno=&pageIndex=1&rowPageC=0&displayAuthor=&searchCategory=0&schClear=on&startDtD=&endDtD=&searchCondition=1&searchKeyword="},{"title":"인사발령(실장급 퇴직 등)","url":"https://www.motir.go.kr/kor/article/ATCL6e90bb9de/4475333/view?mno=&pageIndex=1&rowPageC=0&displayAuthor=&searchCategory=0&schClear=on&startDtD=&endDtD=&searchCondition=1&searchKeyword="}],"press":[{"title":"인천글로벌캠퍼스, 산학협력 혁신생태계 조성","url":"https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/172069/view?mno=&pageIndex=1&rowPageC=0&displayAuthor=&searchCategory=0&schClear=on&startDtD=&endDtD=&searchCondition=1&searchKeyword="},{"title":"AI 데이터센터 국가 전략 산업화를 위한 ‘AI 데이터센터 얼라이언스’ 본격 가동","url":"https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/172068/view?mno=&pageIndex=1&rowPageC=0&displayAuthor=&searchCategory=0&schClear=on&startDtD=&endDtD=&searchCondition=1&searchKeyword="},{"title":"1.7억 명의 미래 거대시장, 방글라데시 진출기업 간담회 개최","url":"https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/172067/view?mno=&pageIndex=1&rowPageC=0&displayAuthor=&searchCategory=0&schClear=on&startDtD=&endDtD=&searchCondition=1&searchKeyword="},{"title":"'26년 상반기 및 6월 주요 유통업체 매출 동향","url":"https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/172066/view?mno=&pageIndex=1&rowPageC=0&displayAuthor=&searchCategory=0&schClear=on&startDtD=&endDtD=&searchCondition=1&searchKeyword="},{"title":"(참고자료)태평양 넘어 브라질로, 글로벌 공급망 돌파구를 열다","url":"https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/172065/view?mno=&pageIndex=1&rowPageC=0&displayAuthor=&searchCategory=0&schClear=on&startDtD=&endDtD=&searchCondition=1&searchKeyword="}]},{"name":"기후에너지환경부","ok":true,"notices":[{"title":"2026년 환경형 예비사회적기업 지정계획 공고","url":"https://mcee.go.kr/home/web/board/read.do?pagerOffset=0&maxPageItems=10&maxIndexPages=10&searchKey=&searchValue=&menuId=10524&orgCd=&boardId=1880370&boardMasterId=39&boardCategoryId=&decorator="},{"title":"유해화학물질 영업허가 취소처분 공고","url":"https://mcee.go.kr/home/web/board/read.do?pagerOffset=0&maxPageItems=10&maxIndexPages=10&searchKey=&searchValue=&menuId=10524&orgCd=&boardId=1879880&boardMasterId=39&boardCategoryId=&decorator="},{"title":"2026년 생태관광지역 신규 지정계획 공고","url":"https://mcee.go.kr/home/web/board/read.do?pagerOffset=0&maxPageItems=10&maxIndexPages=10&searchKey=&searchValue=&menuId=10524&orgCd=&boardId=1874390&boardMasterId=39&boardCategoryId=&decorator="},{"title":"「물순환촉진 종합계획 수립(천안시, 군산시)」 입...","url":"https://mcee.go.kr/home/web/board/read.do?pagerOffset=0&maxPageItems=10&maxIndexPages=10&searchKey=&searchValue=&menuId=10524&orgCd=&boardId=1880860&boardMasterId=39&boardCategoryId=&decorator="},{"title":"「물순환촉진 종합계획 수립(제천시, 증평군)」 입...","url":"https://mcee.go.kr/home/web/board/read.do?pagerOffset=0&maxPageItems=10&maxIndexPages=10&searchKey=&searchValue=&menuId=10524&orgCd=&boardId=1880850&boardMasterId=39&boardCategoryId=&decorator="}],"press":[{"title":"제6차 화학물질 통계조사 결과 공개… 전국 3만 5,969개 취급업체 조사","url":"https://mcee.go.kr/home/web/newsRead.do?pagerOffset=0&maxPageItems=10&maxIndexPages=10&searchKey=&searchValue=&menuId=10607&orgCd=&condition.fromDate=null&condition.createDeptName=null&condition.inactiveYn=N&condition.code=null&condition.pageIndex=null&condition.toDate=null&condition.deleteYn=N&boardId=1880810&boardMasterId=939"},{"title":"먹는샘물 제조부터 보관·유통까지… 안전관리 대폭 강화","url":"https://mcee.go.kr/home/web/newsRead.do?pagerOffset=0&maxPageItems=10&maxIndexPages=10&searchKey=&searchValue=&menuId=10607&orgCd=&condition.fromDate=null&condition.createDeptName=null&condition.inactiveYn=N&condition.code=null&condition.pageIndex=null&condition.toDate=null&condition.deleteYn=N&boardId=1880790&boardMasterId=939"},{"title":"멸종위기 딱정벌레 닻무늬길앞잡이 생애주기 인공증식에 성공","url":"https://mcee.go.kr/home/web/newsRead.do?pagerOffset=0&maxPageItems=10&maxIndexPages=10&searchKey=&searchValue=&menuId=10607&orgCd=&condition.fromDate=null&condition.createDeptName=null&condition.inactiveYn=N&condition.code=null&condition.pageIndex=null&condition.toDate=null&condition.deleteYn=N&boardId=1880780&boardMasterId=939"},{"title":"2035년까지 신규 구매·임차 경찰 차량, 전기·수소차로 100% 보급한다","url":"https://mcee.go.kr/home/web/newsRead.do?pagerOffset=0&maxPageItems=10&maxIndexPages=10&searchKey=&searchValue=&menuId=10607&orgCd=&condition.fromDate=null&condition.createDeptName=null&condition.inactiveYn=N&condition.code=null&condition.pageIndex=null&condition.toDate=null&condition.deleteYn=N&boardId=1880770&boardMasterId=939"},{"title":"(설명) 주민과의 소통을 강화하며 국가 전력망을 적기에 확충할 계획","url":"https://mcee.go.kr/home/web/newsRead.do?pagerOffset=0&maxPageItems=10&maxIndexPages=10&searchKey=&searchValue=&menuId=10607&orgCd=&condition.fromDate=null&condition.createDeptName=null&condition.inactiveYn=N&condition.code=null&condition.pageIndex=null&condition.toDate=null&condition.deleteYn=N&boardId=1880750&boardMasterId=943"}]},{"name":"고용노동부","ok":true,"notices":[{"title":"[공고] 제5회 고용노동 공공데이터·AI 활용 공모...","url":"https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20260700774"},{"title":"[공고] 한국장애인고용공단 비상임임원 공개모집","url":"https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20260700745"},{"title":"[공고] 한국사회적기업진흥원 비상임임원 공개모집","url":"https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20260700693"},{"title":"[공고] 고용노동부 2026년 정규 제3차 정책연구과...","url":"https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20260700691"},{"title":"[공고] 한국산업인력공단 임원(상임이사) 공개모집","url":"https://www.moel.go.kr/news/notice/noticeView.do?bbs_seq=20260700664"}],"press":[{"title":"건설근로자공제회, BNK금융그룹·양대 노총과 「건설노동자 포용금융」 업무협약 체결","url":"https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=19718"},{"title":"택배물류 현장의 무더위, 안전으로 식힌다!","url":"https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=19717"},{"title":"통장 만들고 입출금까지…한국잡월드, 하나은행과 어린이 ‘은행 직업체험관’ 개관","url":"https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=19716"},{"title":"폴리텍 학교법인·인천 국제 안전인증 획득… 2027년 전 권역 완성","url":"https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=19715"},{"title":"고용노동부, 인공지능(AI) 충격 실시간 감지하는 ‘카나리아 대시보드’ 고도화한다","url":"https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=19714"}]},{"name":"외교부","ok":true,"notices":[{"title":"(기간연장) 제21회 대한민국 해외봉사상 후보자 공...","url":"https://www.mofa.go.kr/www/brd/m_4075/view.do?seq=369410&page=1&pitem=10"},{"title":"2026 정부혁신 유공 정부포상 후보자 공모","url":"https://www.mofa.go.kr/www/brd/m_4075/view.do?seq=369429&page=1&pitem=10"},{"title":"외교부 서포터스 모파랑(Friends of MOFA) 29기 모집","url":"https://www.mofa.go.kr/www/brd/m_4075/view.do?seq=369426&page=1&pitem=10"},{"title":"홈페이지 내 간편인증 기능 일시 중단 안내(7.10.(...","url":"https://www.mofa.go.kr/www/brd/m_4075/view.do?seq=369425&page=1&pitem=10"},{"title":"한국국제협력단(KOICA) 상임이사 공모","url":"https://www.mofa.go.kr/www/brd/m_4075/view.do?seq=369420&page=1&pitem=10"}],"press":[{"title":"외교부, 일본 구마모토 지진 관련 본부-공관 합동 상황점검회의 개최","url":"https://www.mofa.go.kr/www/brd/m_4080/view.do?seq=377466&page=1&pitem=10"},{"title":"제48차 세계유산위원회 29일 폐막","url":"https://www.mofa.go.kr/www/brd/m_4080/view.do?seq=377465&page=1&pitem=10"},{"title":"페루 대통령 취임식 경축 특사 파견","url":"https://www.mofa.go.kr/www/brd/m_4080/view.do?seq=377464&page=1&pitem=10"},{"title":"2026년 제1차 한·중앙아시아 정상회의 준비기획단과 현대자동차 간 차량 지원에 관한 업무협력약정(MOU) 체결","url":"https://www.mofa.go.kr/www/brd/m_4080/view.do?seq=377463&page=1&pitem=10"},{"title":"「한국의 갯벌」 2단계, 유네스코 세계유산 확대 등재 (7.25.)","url":"https://www.mofa.go.kr/www/brd/m_4080/view.do?seq=377462&page=1&pitem=10"}]}]}
+</script>
+<script>
+(function () {
+  const META = {
+    '산업통상부': { color:'#2563eb', icon:'factory' },
+    '기후에너지환경부': { color:'#bc4800', icon:'eco' },
+    '고용노동부': { color:'#9d4300', icon:'groups' },
+    '외교부': { color:'#004ac6', icon:'public' }
+  };
+  const ORDER = ['산업통상부','기후에너지환경부','고용노동부','외교부'];
+  function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function itemsHtml(arr, colorClass) {
+    const list = (arr||[]).slice(0,5);
+    if (!list.length) return '<li class="p-3 text-on-surface-variant font-meta-data text-meta-data">항목 없음</li>';
+    return list.map(function(p,i){
+      return '<li class="p-3 font-list-item text-list-item flex gap-3 items-start rounded-lg">' +
+        '<span class="font-bold ' + colorClass + '">' + (i+1) + '</span>' +
+        '<a class="line-clamp-2 text-on-surface no-underline" href="' + esc(p.url||'#') + '" target="_blank" rel="noopener noreferrer">' + esc(p.title) + '</a></li>';
+    }).join('');
+  }
+  function toggleTab(btn, showId, hideId) {
+    const container = btn.parentElement;
+    container.querySelectorAll('button').forEach(function(b){
+      b.classList.remove('border-primary','text-primary');
+      b.classList.add('border-transparent','text-on-surface-variant');
+    });
+    btn.classList.add('border-primary','text-primary');
+    btn.classList.remove('border-transparent','text-on-surface-variant');
+    document.getElementById(showId).classList.remove('hidden');
+    document.getElementById(showId).classList.add('block');
+    document.getElementById(hideId).classList.add('hidden');
+    document.getElementById(hideId).classList.remove('block');
+  }
+  window.toggleTab = toggleTab;
+  function render(data) {
+    document.getElementById('metaTime').textContent = data.collectedAt || '-';
+    const map = {};
+    (data.departments||[]).forEach(function(d){ map[d.name]=d; });
+    const depts = ORDER.map(function(n){ return map[n] || { name:n, notices:[], press:[] }; });
+    document.getElementById('board').innerHTML = depts.map(function(d, idx){
+      const m = META[d.name] || { color:'#004ac6', icon:'star' };
+      const nid = 'notice-' + idx;
+      const pid = 'press-' + idx;
+      return '<article class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] overflow-hidden">' +
+        '<header class="p-4 flex justify-between items-center text-white" style="background:' + m.color + '">' +
+        '<h2 class="font-board-title text-board-title">' + esc(d.name) + '</h2>' +
+        '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1;">star</span></header>' +
+        '<div class="p-0"><div class="flex border-b border-outline-variant">' +
+        '<button type="button" class="flex-1 py-3 font-button-text text-button-text border-b-2 border-primary text-primary" onclick="toggleTab(this,\'' + nid + '\',\'' + pid + '\')">공지사항</button>' +
+        '<button type="button" class="flex-1 py-3 font-button-text text-button-text border-b-2 border-transparent text-on-surface-variant" onclick="toggleTab(this,\'' + pid + '\',\'' + nid + '\')">보도자료</button>' +
+        '</div>' +
+        '<ul class="divide-y divide-primary/10 p-2 block" id="' + nid + '">' + itemsHtml(d.notices, 'text-primary') + '</ul>' +
+        '<ul class="divide-y divide-primary/10 p-2 hidden" id="' + pid + '">' + itemsHtml(d.press, 'text-secondary') + '</ul>' +
+        '</div></article>';
+    }).join('');
+  }
+  function load(){
+    const raw = document.getElementById('major-data').textContent.trim();
+    let data = { collectedAt:'', departments:[] };
+    try { if (raw && raw.charAt(0)==='{') data = JSON.parse(raw); } catch(e){ console.error(e); }
+    render(data);
+  }
+  document.getElementById('btnReload').addEventListener('click', function(){ location.reload(); });
+  load();
+})();
+</script>
+</body>
+</html>

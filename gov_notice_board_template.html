@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>정부부처 공지사항 보드 (PC)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e1e2ed",
+                        "surface-bright": "#faf8ff",
+                        "on-primary-container": "#eeefff",
+                        "primary-container": "#2563eb",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "on-secondary-container": "#5c2400",
+                        "tertiary": "#943700",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-fixed": "#341100",
+                        "outline-variant": "#c3c6d7",
+                        "tertiary-fixed": "#ffdbcd",
+                        "secondary-container": "#fd761a",
+                        "primary-fixed": "#dbe1ff",
+                        "inverse-surface": "#2e3039",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e5",
+                        "surface-container-high": "#e7e7f3",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "inverse-on-surface": "#f0f0fb",
+                        "surface-container": "#ededf9",
+                        "secondary": "#9d4300",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f3f3fe",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#ffb690",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "on-surface-variant": "#434655",
+                        "surface": "#faf8ff",
+                        "secondary-fixed": "#ffdbca",
+                        "outline": "#737686",
+                        "on-tertiary-container": "#ffede6",
+                        "surface-container-highest": "#e1e2ed",
+                        "tertiary-container": "#bc4800",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-background": "#191b23",
+                        "inverse-primary": "#b4c5ff",
+                        "on-surface": "#191b23",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "background": "#faf8ff",
+                        "on-primary-fixed": "#00174b",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#783200",
+                        "on-tertiary-fixed": "#360f00",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-gap": "0.5rem",
+                        "container-padding": "2rem",
+                        "card-padding": "1rem",
+                        "grid-gutter": "1.25rem"
+                    },
+                    "fontFamily": {
+                        "list-item": ["Public Sans"],
+                        "header-title": ["Public Sans"],
+                        "meta-data": ["Public Sans"],
+                        "board-title": ["Public Sans"],
+                        "button-text": ["Public Sans"]
+                    },
+                    "fontSize": {
+                        "list-item": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "header-title": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "meta-data": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "board-title": ["16px", {"lineHeight": "24px", "fontWeight": "700"}],
+                        "button-text": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { background-color: #f9fafb; }
+        .board-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.12s ease;
+            cursor: grab;
+            user-select: none;
+        }
+        .board-card:active { cursor: grabbing; }
+        .board-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .board-card.dragging { opacity: 0.45; transform: scale(0.98); }
+        .board-card.drag-over { outline: 2px dashed #2563eb; outline-offset: 2px; }
+        .board-card a { cursor: pointer; user-select: text; }
+        .filter-active {
+            background-color: #fd761a !important;
+            color: #5c2400 !important;
+        }
+</style>
+</head>
+<body class="font-list-item text-on-surface">
+<header class="bg-primary shadow-md sticky top-0 z-50 rounded-b-xl">
+<div class="max-w-[1440px] mx-auto px-container-padding py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-primary text-3xl">account_balance</span>
+<div>
+<h1 class="font-header-title text-header-title text-on-primary">정부부처 공지사항 (최근 5개) · 4단 보드</h1>
+<p class="text-on-primary/80 font-meta-data text-meta-data mt-1">카드를 드래그해 위치를 바꿀 수 있습니다 · 제목 클릭 시 새 창</p>
+</div>
+</div>
+<button id="btnReload" type="button" class="bg-primary-container text-on-primary-container font-button-text text-button-text px-6 py-3 rounded-full flex items-center gap-2 shadow-lg hover:bg-primary-container/90 active:scale-95 transition-all">
+<span class="material-symbols-outlined">refresh</span>
+화면 새로고침
+</button>
+</div>
+</header>
+
+<div class="max-w-[1440px] mx-auto px-container-padding mt-4">
+<div class="bg-surface-container rounded-lg border border-outline-variant px-4 py-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">schedule</span>
+<p class="font-meta-data text-meta-data text-on-surface-variant" id="metaLine">데이터 준비 중…</p>
+</div>
+</div>
+
+<div class="max-w-[1440px] mx-auto px-container-padding py-8 flex gap-8">
+<aside class="hidden lg:flex flex-col w-64 shrink-0 gap-4">
+<div class="bg-surface-container rounded-xl p-4 border border-outline-variant">
+<h2 class="font-board-title text-board-title text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">filter_alt</span>
+부처 필터
+</h2>
+<nav class="space-y-1" id="filterNav">
+<button type="button" data-filter="all" class="filter-btn filter-active w-full flex items-center gap-3 p-2 rounded-lg font-list-item text-list-item text-left">
+<span class="material-symbols-outlined">dashboard</span>전체 부처
+</button>
+<button type="button" data-filter="economy" class="filter-btn w-full flex items-center gap-3 p-2 hover:bg-surface-variant rounded-lg font-list-item text-list-item text-on-surface-variant transition-colors text-left">
+<span class="material-symbols-outlined">business_center</span>산업/경제
+</button>
+<button type="button" data-filter="society" class="filter-btn w-full flex items-center gap-3 p-2 hover:bg-surface-variant rounded-lg font-list-item text-list-item text-on-surface-variant transition-colors text-left">
+<span class="material-symbols-outlined">theater_comedy</span>사회/문화
+</button>
+<button type="button" data-filter="admin" class="filter-btn w-full flex items-center gap-3 p-2 hover:bg-surface-variant rounded-lg font-list-item text-list-item text-on-surface-variant transition-colors text-left">
+<span class="material-symbols-outlined">account_balance</span>행정/안전
+</button>
+<button type="button" data-filter="diplomacy" class="filter-btn w-full flex items-center gap-3 p-2 hover:bg-surface-variant rounded-lg font-list-item text-list-item text-on-surface-variant transition-colors text-left">
+<span class="material-symbols-outlined">public</span>외교/안보
+</button>
+</nav>
+</div>
+<div class="bg-surface-container-low rounded-xl p-4 border border-outline-variant flex flex-col items-center text-center">
+<div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-primary text-3xl">info</span>
+</div>
+<p class="font-meta-data text-meta-data text-on-surface-variant mb-4">엑셀에서 수집한 최신 공지사항을 보드 형태로 보여줍니다.</p>
+<a href="gov_notice_board_mobile.html" class="w-full py-2 bg-outline-variant text-on-surface font-button-text text-button-text rounded-lg hover:bg-outline transition-colors text-center no-underline">모바일 페이지</a>
+</div>
+</aside>
+
+<main class="flex-grow">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-grid-gutter" id="board"></div>
+</main>
+</div>
+
+<footer class="bg-surface-dim border-t border-outline-variant mt-12 py-8 px-container-padding">
+<div class="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">account_balance</span>
+<span class="font-bold text-on-surface-variant">대한민국 정부 부처 공지사항 보드</span>
+</div>
+<nav class="flex gap-6">
+<a class="font-meta-data text-meta-data text-on-surface-variant hover:text-primary transition-colors" href="gov_notice_board.html">PC</a>
+<a class="font-meta-data text-meta-data text-on-surface-variant hover:text-primary transition-colors" href="gov_notice_board_mobile.html">모바일</a>
+</nav>
+<p class="font-meta-data text-meta-data text-on-surface-variant/70">© 대한민국 정부 부처 공지사항 보드 서비스</p>
+</div>
+</footer>
+
+<script id="notice-data" type="application/json">
+%%NOTICE_JSON%%
+</script>
+<script>
+(function () {
+  const STORAGE_KEY = 'govNoticeCardOrder.v1';
+  const PALETTE = ['#3b82f6','#6c7fd8','#009688','#fd761a','#7e57c2','#2e7d32','#ff6b6b','#0097a7','#00a884','#004ac6'];
+  const CATEGORY = {
+    '재정경제부':'economy','과학기술정보통신부':'economy','산업통상부':'economy','중소벤처기업부':'economy',
+    '국토교통부':'economy','농림축산식품부':'economy','해양수산부':'economy','기후에너지환경부':'economy','기획예산처':'economy',
+    '교육부':'society','보건복지부':'society','고용노동부':'society','문화체육관광부':'society','성평등가족부':'society','식품의약품안전처':'society',
+    '행정안전부':'admin','법무부':'admin','인사혁신처':'admin','법제처':'admin','국가보훈부':'admin',
+    '외교부':'diplomacy','통일부':'diplomacy','국방부':'diplomacy'
+  };
+  let dragSrc = null;
+  let currentFilter = 'all';
+  let allDepts = [];
+
+  function colorFor(name) {
+    if (name === '산업통상부') return '#fd761a';
+    let idx = 0;
+    for (let i = 0; i < name.length; i++) idx = (idx + name.charCodeAt(i)) % PALETTE.length;
+    return PALETTE[idx];
+  }
+  function categoryFor(name) { return CATEGORY[name] || 'admin'; }
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function saveOrder() {
+    const names = Array.from(document.querySelectorAll('#board .board-card')).map(c => c.getAttribute('data-name'));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(names)); } catch (e) {}
+  }
+  function applySavedOrder(depts) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return depts;
+      const order = JSON.parse(raw);
+      if (!Array.isArray(order) || !order.length) return depts;
+      const map = {};
+      depts.forEach(d => { map[d.name] = d; });
+      const sorted = [];
+      order.forEach(name => { if (map[name]) { sorted.push(map[name]); delete map[name]; } });
+      Object.keys(map).forEach(k => sorted.push(map[k]));
+      return sorted;
+    } catch (e) { return depts; }
+  }
+  function bindDrag(card) {
+    card.setAttribute('draggable', 'true');
+    card.addEventListener('dragstart', function (e) {
+      if (e.target && e.target.closest && e.target.closest('a')) { e.preventDefault(); return; }
+      dragSrc = card;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', card.getAttribute('data-name') || ''); } catch (err) {}
+    });
+    card.addEventListener('dragend', function () {
+      card.classList.remove('dragging');
+      document.querySelectorAll('.board-card.drag-over').forEach(el => el.classList.remove('drag-over'));
+      dragSrc = null;
+      saveOrder();
+    });
+    card.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (dragSrc && dragSrc !== card) card.classList.add('drag-over');
+    });
+    card.addEventListener('dragleave', function () { card.classList.remove('drag-over'); });
+    card.addEventListener('drop', function (e) {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      if (!dragSrc || dragSrc === card) return;
+      const board = document.getElementById('board');
+      const cards = Array.from(board.children);
+      const from = cards.indexOf(dragSrc);
+      const to = cards.indexOf(card);
+      if (from < 0 || to < 0) return;
+      if (from < to) board.insertBefore(dragSrc, card.nextSibling);
+      else board.insertBefore(dragSrc, card);
+      saveOrder();
+    });
+  }
+  function render() {
+    const board = document.getElementById('board');
+    let depts = allDepts.slice();
+    if (currentFilter !== 'all') {
+      depts = depts.filter(d => categoryFor(d.name) === currentFilter);
+    }
+    depts = applySavedOrder(depts);
+    if (!depts.length) {
+      board.innerHTML = '<div class="col-span-full text-center py-16 text-on-surface-variant bg-surface-container rounded-xl border border-dashed border-outline-variant">표시할 공지 데이터가 없습니다.</div>';
+      return;
+    }
+    board.innerHTML = depts.map(function (d) {
+      const head = colorFor(d.name);
+      const cat = categoryFor(d.name);
+      if (d.ok === false || !d.posts || !d.posts.length) {
+        return '<article class="board-card bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col h-full overflow-hidden" data-name="' + esc(d.name) + '" data-category="' + cat + '">' +
+          '<header class="p-4 flex justify-between items-center" style="background:' + head + '"><h3 class="font-board-title text-board-title text-white">[' + esc(d.name) + ']</h3><span class="material-symbols-outlined text-white text-sm">more_vert</span></header>' +
+          '<div class="p-4 text-error font-bold text-sm bg-error-container">설정 페이지를 수정하세요.</div></article>';
+      }
+      const items = d.posts.slice(0, 5).map(function (p, i) {
+        const border = i < Math.min(d.posts.length, 5) - 1 ? ' border-b border-outline-variant/30' : '';
+        return '<li class="py-3' + border + ' flex gap-3 hover:bg-surface-container-low transition-colors px-2 rounded-md">' +
+          '<span class="text-primary font-bold text-sm">' + (i + 1) + '.</span>' +
+          '<a class="text-on-surface-variant font-list-item text-list-item truncate" href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer" draggable="false" title="' + esc(p.title) + '">' + esc(p.title) + '</a></li>';
+      }).join('');
+      return '<article class="board-card bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col h-full overflow-hidden" data-name="' + esc(d.name) + '" data-category="' + cat + '">' +
+        '<header class="p-4 flex justify-between items-center" style="background:' + head + '"><h3 class="font-board-title text-board-title text-white">[' + esc(d.name) + ']</h3><span class="material-symbols-outlined text-white text-sm">more_vert</span></header>' +
+        '<div class="p-4 flex flex-col gap-0"><ul class="space-y-0">' + items + '</ul></div></article>';
+    }).join('');
+    Array.from(board.querySelectorAll('.board-card')).forEach(bindDrag);
+  }
+  function setFilter(filter) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      const active = btn.getAttribute('data-filter') === filter;
+      btn.classList.toggle('filter-active', active);
+      btn.classList.toggle('text-on-surface-variant', !active);
+    });
+    render();
+  }
+  function load() {
+    const raw = document.getElementById('notice-data').textContent.trim();
+    let data = { collectedAt: '', departments: [] };
+    try { if (raw && raw.charAt(0) === '{') data = JSON.parse(raw); } catch (e) { console.error(e); }
+    allDepts = Array.isArray(data.departments) ? data.departments.slice() : [];
+    document.getElementById('metaLine').innerHTML =
+      '수집시각: <span class="font-bold">' + esc(data.collectedAt || '-') + '</span> | 부처 <span class="font-bold">' + allDepts.length + '개</span> | 카드 드래그로 위치 이동 가능';
+    render();
+  }
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function () { setFilter(btn.getAttribute('data-filter')); });
+  });
+  document.getElementById('btnReload').addEventListener('click', function () { location.reload(); });
+  load();
+})();
+</script>
+</body>
+</html>

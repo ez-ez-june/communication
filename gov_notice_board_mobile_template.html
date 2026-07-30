@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>정부부처 공지사항 보드 (모바일)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#7d2d00",
+                    "outline-variant": "#c3c6d7",
+                    "on-tertiary": "#ffffff",
+                    "background": "#faf8ff",
+                    "on-primary-container": "#eeefff",
+                    "on-error": "#ffffff",
+                    "secondary": "#9d4300",
+                    "tertiary-fixed": "#ffdbcd",
+                    "surface-container": "#ededf9",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#2e3039",
+                    "tertiary": "#943700",
+                    "surface-container-high": "#e7e7f3",
+                    "surface-dim": "#d9d9e5",
+                    "surface": "#faf8ff",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "primary-fixed": "#dbe1ff",
+                    "on-secondary-fixed": "#341100",
+                    "tertiary-fixed-dim": "#ffb596",
+                    "secondary-fixed-dim": "#ffb690",
+                    "primary-container": "#2563eb",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#bc4800",
+                    "on-secondary-container": "#5c2400",
+                    "secondary-container": "#fd761a",
+                    "on-secondary-fixed-variant": "#783200",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#ffede6",
+                    "on-primary-fixed": "#00174b",
+                    "on-surface-variant": "#434655",
+                    "surface-container-highest": "#e1e2ed",
+                    "surface-variant": "#e1e2ed",
+                    "secondary-fixed": "#ffdbca",
+                    "outline": "#737686",
+                    "on-surface": "#191b23",
+                    "inverse-on-surface": "#f0f0fb",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-bright": "#faf8ff",
+                    "on-tertiary-fixed": "#360f00",
+                    "primary": "#004ac6",
+                    "on-background": "#191b23",
+                    "inverse-primary": "#b4c5ff",
+                    "surface-container-low": "#f3f3fe",
+                    "surface-tint": "#0053db",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "grid-gutter": "1.25rem",
+                    "container-padding": "2rem",
+                    "stack-gap": "0.5rem",
+                    "card-padding": "1rem"
+            },
+            "fontFamily": {
+                    "list-item": ["Public Sans"],
+                    "meta-data": ["Public Sans"],
+                    "header-title": ["Public Sans"],
+                    "button-text": ["Public Sans"],
+                    "board-title": ["Public Sans"]
+            },
+            "fontSize": {
+                    "list-item": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "meta-data": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "header-title": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "button-text": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "board-title": ["16px", {"lineHeight": "24px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #faf8ff;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .notice-card { box-shadow: 0px 4px 12px rgba(0,0,0,0.05); }
+        .tab-active {
+            background-color: #fd761a !important;
+            color: #5c2400 !important;
+        }
+</style>
+</head>
+<body class="flex flex-col min-h-screen">
+<header class="bg-primary text-on-primary fixed top-0 left-0 right-0 z-50 rounded-b-xl shadow-md flex flex-col items-center px-4 py-4 w-full">
+<div class="flex justify-between items-center w-full">
+<h1 class="font-header-title text-header-title text-on-primary">정부부처 공지사항</h1>
+<button id="btnReload" type="button" class="font-button-text text-button-text flex items-center gap-1 hover:bg-primary-container/20 transition-colors p-2 rounded-lg active:scale-95 duration-150">
+<span class="material-symbols-outlined">refresh</span>
+<span class="hidden sm:inline">화면 새로고침</span>
+</button>
+</div>
+<div class="w-full mt-4 flex items-center justify-between font-meta-data text-meta-data opacity-90 border-t border-on-primary/10 pt-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">update</span>
+<span id="metaTime">마지막 업데이트: -</span>
+</div>
+<div id="metaCount">부처 총: 0개</div>
+</div>
+</header>
+
+<nav class="fixed top-[110px] left-0 right-0 bg-surface-container z-40 border-b border-outline-variant shadow-sm">
+<div class="flex overflow-x-auto hide-scrollbar px-4 py-3 gap-2" id="filterNav">
+<button type="button" data-filter="all" class="tab-btn tab-active flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg font-list-item text-list-item transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined">dashboard</span>전체 부처
+</button>
+<button type="button" data-filter="major" class="tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg font-list-item text-list-item transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined">star</span>★주요부처★
+</button>
+<button type="button" data-filter="economy" class="tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg font-list-item text-list-item transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined">business_center</span>산업/경제
+</button>
+<button type="button" data-filter="society" class="tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg font-list-item text-list-item transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined">theater_comedy</span>사회/문화
+</button>
+<button type="button" data-filter="admin" class="tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg font-list-item text-list-item transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined">account_balance</span>행정/안전
+</button>
+<button type="button" data-filter="diplomacy" class="tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg font-list-item text-list-item transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined">public</span>외교/안보
+</button>
+</div>
+</nav>
+
+<div class="mt-[180px] px-4 max-w-lg mx-auto w-full">
+<div id="majorActions" class="hidden mb-3">
+<a id="btnPressTogether" href="gov_major_press_board_mobile.html" class="w-full flex items-center justify-center gap-2 bg-secondary text-on-secondary font-button-text text-button-text px-4 py-3 rounded-xl shadow no-underline">
+<span class="material-symbols-outlined">newspaper</span>보도자료 함께보기
+</a>
+</div>
+</div>
+<main class="mb-20 px-4 flex flex-col gap-5 max-w-lg mx-auto w-full" id="board"></main>
+
+<button id="fabSync" type="button" class="fixed bottom-6 right-6 w-14 h-14 bg-primary-container text-on-primary-container rounded-full shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined text-[32px]">sync</span>
+</button>
+
+<footer class="bg-surface-dim w-full py-6 px-4 flex flex-col items-center gap-4 text-center border-t border-outline-variant mt-auto">
+<div class="font-bold text-on-surface-variant mb-1">대한민국 정부</div>
+<div class="flex flex-wrap justify-center gap-4 font-meta-data text-meta-data text-on-surface-variant opacity-80">
+<a class="hover:text-primary no-underline transition-colors" href="gov_notice_board.html">PC 페이지</a>
+<a class="hover:text-primary no-underline transition-colors" href="gov_notice_board_mobile.html">모바일</a>
+</div>
+<p class="font-meta-data text-meta-data text-on-surface-variant opacity-60">© 대한민국 정부 부처 공지사항 보드 서비스</p>
+</footer>
+
+<script id="notice-data" type="application/json">
+%%NOTICE_JSON%%
+</script>
+<script>
+(function () {
+  const STORAGE_KEY = 'govNoticeCardOrder.v1';
+  const PALETTE = ['#004ac6','#9d4300','#943700','#737686','#2563eb','#2e7d32','#009688','#fd761a','#6c7fd8','#0097a7'];
+  const ICONS = {
+    '보건복지부':'medical_services','행정안전부':'security','외교부':'public','국방부':'security',
+    '교육부':'school','고용노동부':'work','문화체육관광부':'theater_comedy','default':'stars'
+  };
+  const CATEGORY = {
+    '재정경제부':'economy','과학기술정보통신부':'economy','산업통상부':'economy','중소벤처기업부':'economy',
+    '국토교통부':'economy','농림축산식품부':'economy','해양수산부':'economy','기후에너지환경부':'economy','기획예산처':'economy',
+    '교육부':'society','보건복지부':'society','고용노동부':'society','문화체육관광부':'society','성평등가족부':'society','식품의약품안전처':'society',
+    '행정안전부':'admin','법무부':'admin','인사혁신처':'admin','법제처':'admin','국가보훈부':'admin',
+    '외교부':'diplomacy','통일부':'diplomacy','국방부':'diplomacy'
+  };
+  const MAJOR_ORDER = ['산업통상부','기후에너지환경부','고용노동부','외교부'];
+  let currentFilter = 'all';
+  let allDepts = [];
+
+  function colorFor(name) {
+    if (name === '산업통상부') return '#fd761a';
+    let idx = 0;
+    for (let i = 0; i < name.length; i++) idx = (idx + name.charCodeAt(i)) % PALETTE.length;
+    return PALETTE[idx];
+  }
+  function categoryFor(name) { return CATEGORY[name] || 'admin'; }
+  function iconFor(name) { return ICONS[name] || ICONS.default; }
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function applySavedOrder(depts) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return depts;
+      const order = JSON.parse(raw);
+      if (!Array.isArray(order) || !order.length) return depts;
+      const map = {};
+      depts.forEach(d => { map[d.name] = d; });
+      const sorted = [];
+      order.forEach(name => { if (map[name]) { sorted.push(map[name]); delete map[name]; } });
+      Object.keys(map).forEach(k => sorted.push(map[k]));
+      return sorted;
+    } catch (e) { return depts; }
+  }
+  function padNum(n) { return (n < 10 ? '0' : '') + n; }
+  function render() {
+    const board = document.getElementById('board');
+    const majorBox = document.getElementById('majorActions');
+    if (majorBox) majorBox.classList.toggle('hidden', currentFilter !== 'major');
+    let depts = allDepts.slice();
+    if (currentFilter === 'major') {
+      const map = {};
+      depts.forEach(d => { map[d.name] = d; });
+      depts = MAJOR_ORDER.map(n => map[n]).filter(Boolean);
+    } else if (currentFilter !== 'all') {
+      depts = depts.filter(d => categoryFor(d.name) === currentFilter);
+      depts = applySavedOrder(depts);
+    } else {
+      depts = applySavedOrder(depts);
+    }
+    if (!depts.length) {
+      board.innerHTML = '<div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest rounded-xl border border-dashed border-outline-variant">표시할 공지 데이터가 없습니다.</div>';
+      return;
+    }
+    board.innerHTML = depts.map(function (d) {
+      const head = colorFor(d.name);
+      const icon = iconFor(d.name);
+      if (d.ok === false || !d.posts || !d.posts.length) {
+        return '<article class="notice-card bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/30">' +
+          '<header class="px-4 py-3 flex justify-between items-center" style="background:' + head + '">' +
+          '<h2 class="font-board-title text-board-title text-white">' + esc(d.name) + '</h2>' +
+          '<span class="material-symbols-outlined text-white">' + icon + '</span></header>' +
+          '<div class="p-card-padding text-error font-bold text-sm">설정 페이지를 수정하세요.</div></article>';
+      }
+      const items = d.posts.slice(0, 5).map(function (p, i) {
+        const last = i === Math.min(d.posts.length, 5) - 1;
+        const border = last ? '' : ' border-b border-outline-variant/20 pb-2';
+        return '<li class="flex items-start gap-3">' +
+          '<span class="font-meta-data text-meta-data pt-1" style="color:' + head + '">' + padNum(i + 1) + '</span>' +
+          '<div class="flex flex-col w-full' + border + '">' +
+          '<a class="font-list-item text-list-item text-on-surface line-clamp-2 no-underline" href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer">' + esc(p.title) + '</a>' +
+          '</div></li>';
+      }).join('');
+      return '<article class="notice-card bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/30 transition-transform active:scale-[0.98]" data-name="' + esc(d.name) + '">' +
+        '<header class="px-4 py-3 flex justify-between items-center" style="background:' + head + '">' +
+        '<h2 class="font-board-title text-board-title text-white">' + esc(d.name) + '</h2>' +
+        '<span class="material-symbols-outlined text-white">' + icon + '</span></header>' +
+        '<div class="p-card-padding"><ul class="space-y-4">' + items + '</ul></div></article>';
+    }).join('');
+  }
+  function setFilter(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('tab-active', 'bg-secondary-container', 'text-on-secondary-container');
+      b.classList.add('text-on-surface-variant', 'hover:bg-surface-variant');
+    });
+    if (btn) {
+      btn.classList.add('tab-active');
+      btn.classList.remove('text-on-surface-variant', 'hover:bg-surface-variant');
+      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+    render();
+  }
+  function load() {
+    const raw = document.getElementById('notice-data').textContent.trim();
+    let data = { collectedAt: '', departments: [] };
+    try { if (raw && raw.charAt(0) === '{') data = JSON.parse(raw); } catch (e) { console.error(e); }
+    allDepts = Array.isArray(data.departments) ? data.departments.slice() : [];
+    const t = data.collectedAt || '-';
+    const timeOnly = t.indexOf(' ') > 0 ? t.split(' ')[1] : t;
+    document.getElementById('metaTime').textContent = '마지막 업데이트: ' + timeOnly;
+    document.getElementById('metaCount').textContent = '부처 총: ' + allDepts.length + '개';
+    render();
+  }
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function () { setFilter(btn.getAttribute('data-filter'), btn); });
+  });
+  document.getElementById('btnReload').addEventListener('click', function () { location.reload(); });
+  document.getElementById('fabSync').addEventListener('click', function () {
+    const icon = this.querySelector('.material-symbols-outlined');
+    icon.classList.add('animate-spin');
+    setTimeout(function () {
+      icon.classList.remove('animate-spin');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      location.reload();
+    }, 800);
+  });
+  load();
+})();
+</script>
+</body>
+</html>
