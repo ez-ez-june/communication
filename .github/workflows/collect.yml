@@ -1,0 +1,73 @@
+name: Collect notices
+
+on:
+  schedule:
+    # Every day at 03:00 UTC = 12:00 KST
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Collect notices
+        run: python collector.py
+
+      - name: Build HTML boards
+        run: python build_html.py
+
+      - name: Prepare Pages site
+        run: |
+          mkdir -p _site
+          cp index.html \
+             gov_notice_board.html \
+             gov_notice_board_mobile.html \
+             gov_major_press_board.html \
+             gov_major_press_board_mobile.html \
+             _site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Upload JSON artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: notice-json
+          path: |
+            data/notice.json
+            data/major.json
+          retention-days: 14
+
+  deploy:
+    needs: collect
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

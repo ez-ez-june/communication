@@ -1,7 +1,43 @@
+# Ignore everything by default
 *
+
+# Keep Excel workbooks
 !*.xlsm
 !*.xlsx
 !*.xls
+
+# Keep HTML boards and templates
 !*.html
 !*.htm
+
+# Keep Python collector
+!*.py
+!requirements.txt
+
+# Keep package dirs
+!parsers/
+!parsers/**
+!config/
+!config/**
+!data/
+!data/**
+
+# Keep GitHub Actions
+!.github/
+!.github/**
+
+# Keep project docs / VBA reference (optional)
+!*.md
+!*.bas
 !.gitignore
+
+# Still ignore secrets / local junk
+.env
+.env.*
+__pycache__/
+*.pyc
+.venv/
+venv/
+~$*
+xlsm_extract/
+*.log
