@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html class="light" lang="ko">
 <head>
 <meta charset="utf-8"/>
@@ -13,53 +13,53 @@
             theme: {
                 extend: {
                     "colors": {
-                        "surface-variant": "#e1e2ed",
-                        "surface-bright": "#faf8ff",
-                        "on-primary-container": "#eeefff",
-                        "primary-container": "#2563eb",
+                        "surface-variant": "#e4e8ee",
+                        "surface-bright": "#f7f8fa",
+                        "on-primary-container": "#2f4055",
+                        "primary-container": "#b7cce0",
                         "on-error": "#ffffff",
-                        "surface-tint": "#0053db",
-                        "primary": "#004ac6",
-                        "on-secondary-container": "#5c2400",
-                        "tertiary": "#943700",
-                        "primary-fixed-dim": "#b4c5ff",
-                        "on-secondary-fixed": "#341100",
-                        "outline-variant": "#c3c6d7",
-                        "tertiary-fixed": "#ffdbcd",
-                        "secondary-container": "#fd761a",
-                        "primary-fixed": "#dbe1ff",
-                        "inverse-surface": "#2e3039",
+                        "surface-tint": "#6b8fb8",
+                        "primary": "#6b8fb8",
+                        "on-secondary-container": "#5a4336",
+                        "tertiary": "#b08978",
+                        "primary-fixed-dim": "#c5d6e8",
+                        "on-secondary-fixed": "#4a382e",
+                        "outline-variant": "#d5dae2",
+                        "tertiary-fixed": "#f0e0d8",
+                        "secondary-container": "#f0d5c0",
+                        "primary-fixed": "#dce7f2",
+                        "inverse-surface": "#3a4250",
                         "on-tertiary": "#ffffff",
-                        "surface-dim": "#d9d9e5",
-                        "surface-container-high": "#e7e7f3",
-                        "on-primary-fixed-variant": "#003ea8",
-                        "inverse-on-surface": "#f0f0fb",
-                        "surface-container": "#ededf9",
-                        "secondary": "#9d4300",
+                        "surface-dim": "#e4e8ee",
+                        "surface-container-high": "#eceff3",
+                        "on-primary-fixed-variant": "#4a6785",
+                        "inverse-on-surface": "#f4f6f8",
+                        "surface-container": "#eef1f5",
+                        "secondary": "#c9956e",
                         "on-primary": "#ffffff",
-                        "surface-container-low": "#f3f3fe",
+                        "surface-container-low": "#f4f6f8",
                         "on-secondary": "#ffffff",
-                        "secondary-fixed-dim": "#ffb690",
-                        "tertiary-fixed-dim": "#ffb596",
-                        "on-surface-variant": "#434655",
-                        "surface": "#faf8ff",
-                        "secondary-fixed": "#ffdbca",
-                        "outline": "#737686",
-                        "on-tertiary-container": "#ffede6",
-                        "surface-container-highest": "#e1e2ed",
-                        "tertiary-container": "#bc4800",
+                        "secondary-fixed-dim": "#e8c9b0",
+                        "tertiary-fixed-dim": "#e0c8bc",
+                        "on-surface-variant": "#5a6472",
+                        "surface": "#f7f8fa",
+                        "secondary-fixed": "#f5e6d8",
+                        "outline": "#9aa3b0",
+                        "on-tertiary-container": "#fff8f5",
+                        "surface-container-highest": "#e4e8ee",
+                        "tertiary-container": "#d4b5a5",
                         "surface-container-lowest": "#ffffff",
-                        "error-container": "#ffdad6",
-                        "on-background": "#191b23",
-                        "inverse-primary": "#b4c5ff",
-                        "on-surface": "#191b23",
-                        "on-tertiary-fixed-variant": "#7d2d00",
-                        "background": "#faf8ff",
-                        "on-primary-fixed": "#00174b",
-                        "on-error-container": "#93000a",
-                        "on-secondary-fixed-variant": "#783200",
-                        "on-tertiary-fixed": "#360f00",
-                        "error": "#ba1a1a"
+                        "error-container": "#f5d5d2",
+                        "on-background": "#2a3340",
+                        "inverse-primary": "#c5d6e8",
+                        "on-surface": "#2a3340",
+                        "on-tertiary-fixed-variant": "#7a5a4c",
+                        "background": "#f7f8fa",
+                        "on-primary-fixed": "#2f4055",
+                        "on-error-container": "#7a2e2a",
+                        "on-secondary-fixed-variant": "#8a6a52",
+                        "on-tertiary-fixed": "#4a342c",
+                        "error": "#c0706c"
                     },
                     "borderRadius": {
                         "DEFAULT": "0.25rem",
@@ -96,7 +96,7 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             vertical-align: middle;
         }
-        body { background-color: #f9fafb; }
+        body { background-color: #f7f8fa; }
         .board-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.12s ease;
             cursor: grab;
@@ -105,14 +105,14 @@
         .board-card:active { cursor: grabbing; }
         .board-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
         }
         .board-card.dragging { opacity: 0.45; transform: scale(0.98); }
-        .board-card.drag-over { outline: 2px dashed #2563eb; outline-offset: 2px; }
+        .board-card.drag-over { outline: 2px dashed #6b8fb8; outline-offset: 2px; }
         .board-card a { cursor: pointer; user-select: text; }
         .filter-active {
-            background-color: #fd761a !important;
-            color: #5c2400 !important;
+            background-color: #f0d5c0 !important;
+            color: #5a4336 !important;
         }
 </style>
 </head>
@@ -122,7 +122,7 @@
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-on-primary text-3xl">account_balance</span>
 <div>
-<h1 class="font-header-title text-header-title text-on-primary">정부부처 공지사항 (최근 5개) · 4단 보드</h1>
+<h1 class="font-header-title text-header-title text-on-primary">정부부처 공지사항 (최근 5개)</h1>
 <p class="text-on-primary/80 font-meta-data text-meta-data mt-1">카드를 드래그해 위치를 바꿀 수 있습니다 · 제목 클릭 시 새 창</p>
 </div>
 </div>
@@ -152,7 +152,7 @@
 <span class="material-symbols-outlined">dashboard</span>전체 부처
 </button>
 <button type="button" data-filter="major" class="filter-btn w-full flex items-center gap-3 p-2 hover:bg-surface-variant rounded-lg font-list-item text-list-item text-on-surface-variant transition-colors text-left">
-<span class="material-symbols-outlined">star</span>★주요부처★
+<span class="material-symbols-outlined">star</span>주요부처
 </button>
 <button type="button" data-filter="economy" class="filter-btn w-full flex items-center gap-3 p-2 hover:bg-surface-variant rounded-lg font-list-item text-list-item text-on-surface-variant transition-colors text-left">
 <span class="material-symbols-outlined">business_center</span>산업/경제
@@ -208,7 +208,7 @@
 <script>
 (function () {
   const STORAGE_KEY = 'govNoticeCardOrder.v1';
-  const PALETTE = ['#3b82f6','#6c7fd8','#009688','#fd761a','#7e57c2','#2e7d32','#ff6b6b','#0097a7','#00a884','#004ac6'];
+  const PALETTE = ['#b7d0ea','#c5c8e8','#b8ddd6','#f0d0b0','#d4c4e8','#c5e0c8','#f0c4c4','#b8dce0','#c8e0d4','#b0c4e0'];
   const CATEGORY = {
     '재정경제부':'economy','과학기술정보통신부':'economy','산업통상부':'economy','중소벤처기업부':'economy',
     '국토교통부':'economy','농림축산식품부':'economy','해양수산부':'economy','기후에너지환경부':'economy','기획예산처':'economy',
@@ -222,7 +222,7 @@
   let allDepts = [];
 
   function colorFor(name) {
-    if (name === '산업통상부') return '#fd761a';
+    if (name === '산업통상부') return '#f0d0b0';
     let idx = 0;
     for (let i = 0; i < name.length; i++) idx = (idx + name.charCodeAt(i)) % PALETTE.length;
     return PALETTE[idx];
@@ -308,17 +308,17 @@
       const cat = categoryFor(d.name);
       if (d.ok === false || !d.posts || !d.posts.length) {
         return '<article class="board-card bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col h-full overflow-hidden" data-name="' + esc(d.name) + '" data-category="' + cat + '">' +
-          '<header class="p-4 flex justify-between items-center" style="background:' + head + '"><h3 class="font-board-title text-board-title text-white">[' + esc(d.name) + ']</h3><span class="material-symbols-outlined text-white text-sm">more_vert</span></header>' +
+          '<header class="p-4 flex justify-between items-center" style="background:' + head + '"><h3 class="font-board-title text-board-title" style="color:#3d4a5c">[' + esc(d.name) + ']</h3><span class="material-symbols-outlined text-sm" style="color:#5a6472">more_vert</span></header>' +
           '<div class="p-4 text-error font-bold text-sm bg-error-container">설정 페이지를 수정하세요.</div></article>';
       }
       const items = d.posts.slice(0, 5).map(function (p, i) {
         const border = i < Math.min(d.posts.length, 5) - 1 ? ' border-b border-outline-variant/30' : '';
         return '<li class="py-3' + border + ' flex gap-3 hover:bg-surface-container-low transition-colors px-2 rounded-md">' +
-          '<span class="text-primary font-bold text-sm">' + (i + 1) + '.</span>' +
+          '<span class="font-bold text-sm" style="color:#6b8fb8">' + (i + 1) + '.</span>' +
           '<a class="text-on-surface-variant font-list-item text-list-item truncate" href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer" draggable="false" title="' + esc(p.title) + '">' + esc(p.title) + '</a></li>';
       }).join('');
       return '<article class="board-card bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col h-full overflow-hidden" data-name="' + esc(d.name) + '" data-category="' + cat + '">' +
-        '<header class="p-4 flex justify-between items-center" style="background:' + head + '"><h3 class="font-board-title text-board-title text-white">[' + esc(d.name) + ']</h3><span class="material-symbols-outlined text-white text-sm">more_vert</span></header>' +
+        '<header class="p-4 flex justify-between items-center" style="background:' + head + '"><h3 class="font-board-title text-board-title" style="color:#3d4a5c">[' + esc(d.name) + ']</h3><span class="material-symbols-outlined text-sm" style="color:#5a6472">more_vert</span></header>' +
         '<div class="p-4 flex flex-col gap-0"><ul class="space-y-0">' + items + '</ul></div></article>';
     }).join('');
     Array.from(board.querySelectorAll('.board-card')).forEach(bindDrag);

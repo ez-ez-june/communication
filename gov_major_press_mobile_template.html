@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html class="light" lang="ko">
 <head>
 <meta charset="utf-8"/>
@@ -13,16 +13,16 @@
         theme: {
           extend: {
             colors: {
-              "surface-container-low": "#f3f3fe","secondary-fixed": "#ffdbca","inverse-on-surface": "#f0f0fb",
-              "surface-variant": "#e1e2ed","primary-fixed-dim": "#b4c5ff","surface-container": "#ededf9",
-              "surface-container-high": "#e7e7f3","primary-fixed": "#dbe1ff","on-tertiary": "#ffffff",
-              "on-secondary": "#ffffff","secondary-container": "#fd761a","surface-container-lowest": "#ffffff",
-              "primary-container": "#2563eb","error-container": "#ffdad6","primary": "#004ac6",
-              "tertiary-container": "#bc4800","surface-dim": "#d9d9e5","outline": "#737686",
-              "on-surface-variant": "#434655","on-surface": "#191b23","secondary": "#9d4300",
-              "surface-container-highest": "#e1e2ed","background": "#faf8ff","outline-variant": "#c3c6d7",
-              "on-background": "#191b23","tertiary": "#943700","error": "#ba1a1a","on-primary": "#ffffff",
-              "on-primary-container": "#eeefff","on-tertiary-container": "#ffede6","surface": "#faf8ff"
+              "surface-container-low": "#f4f6f8","secondary-fixed": "#f5e6d8","inverse-on-surface": "#f4f6f8",
+              "surface-variant": "#e4e8ee","primary-fixed-dim": "#c5d6e8","surface-container": "#eef1f5",
+              "surface-container-high": "#eceff3","primary-fixed": "#dce7f2","on-tertiary": "#ffffff",
+              "on-secondary": "#ffffff","secondary-container": "#f0d5c0","surface-container-lowest": "#ffffff",
+              "primary-container": "#b7cce0","error-container": "#f5d5d2","primary": "#6b8fb8",
+              "tertiary-container": "#d4b5a5","surface-dim": "#e4e8ee","outline": "#9aa3b0",
+              "on-surface-variant": "#5a6472","on-surface": "#2a3340","secondary": "#c9956e",
+              "surface-container-highest": "#e4e8ee","background": "#f7f8fa","outline-variant": "#d5dae2",
+              "on-background": "#2a3340","tertiary": "#b08978","error": "#c0706c","on-primary": "#ffffff",
+              "on-primary-container": "#2f4055","on-tertiary-container": "#fff8f5","surface": "#f7f8fa"
             },
             borderRadius: { DEFAULT:"0.25rem", lg:"0.5rem", xl:"0.75rem", full:"9999px" },
             spacing: { "container-padding":"2rem", "card-padding":"1rem" },
@@ -47,7 +47,7 @@ body { font-family:'Public Sans',sans-serif; }
 <header class="bg-primary text-on-primary fixed top-0 left-0 right-0 z-50 rounded-b-xl shadow-md">
 <div class="flex flex-col justify-between items-stretch px-4 py-5 w-full gap-3">
 <div class="flex justify-between items-center">
-<h1 class="font-header-title text-header-title">★주요부처★ 함께보기</h1>
+<h1 class="font-header-title text-header-title">주요부처 함께보기</h1>
 <button id="btnReload" type="button" class="font-button-text text-button-text flex items-center gap-1 p-2 rounded-lg hover:bg-primary-container/20">
 <span class="material-symbols-outlined">refresh</span>
 </button>
@@ -64,7 +64,7 @@ body { font-family:'Public Sans',sans-serif; }
 </div>
 <div class="flex flex-col items-end">
 <span class="font-meta-data text-meta-data text-on-surface-variant">부처 수</span>
-<span class="font-list-item text-list-item text-on-surface font-bold">★주요부처 4개★</span>
+<span class="font-list-item text-list-item text-on-surface font-bold">주요부처 4개</span>
 </div>
 </div>
 </div>
@@ -82,10 +82,10 @@ body { font-family:'Public Sans',sans-serif; }
 <script>
 (function () {
   const META = {
-    '산업통상부': { color:'#2563eb', icon:'factory' },
-    '기후에너지환경부': { color:'#bc4800', icon:'eco' },
-    '고용노동부': { color:'#9d4300', icon:'groups' },
-    '외교부': { color:'#004ac6', icon:'public' }
+    '산업통상부': { color:'#b7d0ea', icon:'factory' },
+    '기후에너지환경부': { color:'#b8ddd6', icon:'eco' },
+    '고용노동부': { color:'#f0d0b0', icon:'groups' },
+    '외교부': { color:'#c5c8e8', icon:'public' }
   };
   const ORDER = ['산업통상부','기후에너지환경부','고용노동부','외교부'];
   function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -122,9 +122,9 @@ body { font-family:'Public Sans',sans-serif; }
       const nid = 'notice-' + idx;
       const pid = 'press-' + idx;
       return '<article class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] overflow-hidden">' +
-        '<header class="p-4 flex justify-between items-center text-white" style="background:' + m.color + '">' +
-        '<h2 class="font-board-title text-board-title">' + esc(d.name) + '</h2>' +
-        '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1;">star</span></header>' +
+        '<header class="p-4 flex justify-between items-center" style="background:' + m.color + '">' +
+        '<h2 class="font-board-title text-board-title" style="color:#3d4a5c">' + esc(d.name) + '</h2>' +
+        '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1;color:#5a6472">star</span></header>' +
         '<div class="p-0"><div class="flex border-b border-outline-variant">' +
         '<button type="button" class="flex-1 py-3 font-button-text text-button-text border-b-2 border-primary text-primary" onclick="toggleTab(this,\'' + nid + '\',\'' + pid + '\')">공지사항</button>' +
         '<button type="button" class="flex-1 py-3 font-button-text text-button-text border-b-2 border-transparent text-on-surface-variant" onclick="toggleTab(this,\'' + pid + '\',\'' + nid + '\')">보도자료</button>' +

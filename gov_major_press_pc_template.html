@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html class="light" lang="ko">
 <head>
 <meta charset="utf-8"/>
@@ -13,21 +13,21 @@
         theme: {
           extend: {
             colors: {
-              "surface-container-low": "#f3f3fe","secondary-fixed": "#ffdbca","inverse-on-surface": "#f0f0fb",
-              "surface-variant": "#e1e2ed","primary-fixed-dim": "#b4c5ff","surface-container": "#ededf9",
-              "surface-container-high": "#e7e7f3","primary-fixed": "#dbe1ff","on-tertiary": "#ffffff",
-              "on-secondary": "#ffffff","on-primary-fixed-variant": "#003ea8","secondary-container": "#fd761a",
-              "surface-container-lowest": "#ffffff","primary-container": "#2563eb","error-container": "#ffdad6",
-              "on-error-container": "#93000a","on-tertiary-fixed-variant": "#7d2d00","primary": "#004ac6",
-              "tertiary-container": "#bc4800","inverse-primary": "#b4c5ff","tertiary-fixed": "#ffdbcd",
-              "surface-dim": "#d9d9e5","on-tertiary-container": "#ffede6","surface-tint": "#0053db",
-              "outline": "#737686","on-surface-variant": "#434655","on-surface": "#191b23","secondary": "#9d4300",
-              "on-error": "#ffffff","surface-container-highest": "#e1e2ed","background": "#faf8ff",
-              "on-secondary-fixed": "#341100","tertiary-fixed-dim": "#ffb596","outline-variant": "#c3c6d7",
-              "on-background": "#191b23","on-tertiary-fixed": "#360f00","on-secondary-fixed-variant": "#783200",
-              "on-secondary-container": "#5c2400","secondary-fixed-dim": "#ffb690","tertiary": "#943700",
-              "error": "#ba1a1a","on-primary": "#ffffff","on-primary-container": "#eeefff",
-              "inverse-surface": "#2e3039","surface": "#faf8ff","on-primary-fixed": "#00174b","surface-bright": "#faf8ff"
+              "surface-container-low": "#f4f6f8","secondary-fixed": "#f5e6d8","inverse-on-surface": "#f4f6f8",
+              "surface-variant": "#e4e8ee","primary-fixed-dim": "#c5d6e8","surface-container": "#eef1f5",
+              "surface-container-high": "#eceff3","primary-fixed": "#dce7f2","on-tertiary": "#ffffff",
+              "on-secondary": "#ffffff","on-primary-fixed-variant": "#4a6785","secondary-container": "#f0d5c0",
+              "surface-container-lowest": "#ffffff","primary-container": "#b7cce0","error-container": "#f5d5d2",
+              "on-error-container": "#7a2e2a","on-tertiary-fixed-variant": "#7a5a4c","primary": "#6b8fb8",
+              "tertiary-container": "#d4b5a5","inverse-primary": "#c5d6e8","tertiary-fixed": "#f0e0d8",
+              "surface-dim": "#e4e8ee","on-tertiary-container": "#fff8f5","surface-tint": "#6b8fb8",
+              "outline": "#9aa3b0","on-surface-variant": "#5a6472","on-surface": "#2a3340","secondary": "#c9956e",
+              "on-error": "#ffffff","surface-container-highest": "#e4e8ee","background": "#f7f8fa",
+              "on-secondary-fixed": "#4a382e","tertiary-fixed-dim": "#e0c8bc","outline-variant": "#d5dae2",
+              "on-background": "#2a3340","on-tertiary-fixed": "#4a342c","on-secondary-fixed-variant": "#8a6a52",
+              "on-secondary-container": "#5a4336","secondary-fixed-dim": "#e8c9b0","tertiary": "#b08978",
+              "error": "#c0706c","on-primary": "#ffffff","on-primary-container": "#2f4055",
+              "inverse-surface": "#3a4250","surface": "#f7f8fa","on-primary-fixed": "#2f4055","surface-bright": "#f7f8fa"
             },
             borderRadius: { DEFAULT:"0.25rem", lg:"0.5rem", xl:"0.75rem", full:"9999px" },
             spacing: { "grid-gutter":"1.25rem", "container-padding":"2rem", "stack-gap":"0.5rem", "card-padding":"1rem" },
@@ -45,7 +45,7 @@
 </script>
 <style>
 .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; vertical-align:middle; }
-body { font-family:'Public Sans',sans-serif; background-color:#faf8ff; }
+body { font-family:'Public Sans',sans-serif; background-color:#f7f8fa; }
 .dept-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .dept-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); }
 </style>
@@ -55,7 +55,7 @@ body { font-family:'Public Sans',sans-serif; background-color:#faf8ff; }
 <div class="flex items-center gap-4">
 <span class="material-symbols-outlined text-3xl">newspaper</span>
 <div>
-<h1 class="font-header-title text-header-title tracking-tight">★주요부처★ 보도자료 함께보기</h1>
+<h1 class="font-header-title text-header-title tracking-tight">주요부처 보도자료 함께보기</h1>
 <p class="font-meta-data text-meta-data text-on-primary/80 mt-1">공지사항 + 보도자료 · 부처당 최근 5개</p>
 </div>
 </div>
@@ -96,10 +96,10 @@ body { font-family:'Public Sans',sans-serif; background-color:#faf8ff; }
 <script>
 (function () {
   const META = {
-    '산업통상부': { color:'#004ac6', icon:'factory', domain:'MOTIR.GO.KR' },
-    '기후에너지환경부': { color:'#10b981', icon:'eco', domain:'MCEE.GO.KR' },
-    '고용노동부': { color:'#9d4300', icon:'groups', domain:'MOEL.GO.KR' },
-    '외교부': { color:'#2563eb', icon:'public', domain:'MOFA.GO.KR' }
+    '산업통상부': { color:'#b7d0ea', icon:'factory', domain:'MOTIR.GO.KR' },
+    '기후에너지환경부': { color:'#b8ddd6', icon:'eco', domain:'MCEE.GO.KR' },
+    '고용노동부': { color:'#f0d0b0', icon:'groups', domain:'MOEL.GO.KR' },
+    '외교부': { color:'#c5c8e8', icon:'public', domain:'MOFA.GO.KR' }
   };
   const ORDER = ['산업통상부','기후에너지환경부','고용노동부','외교부'];
   function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -126,11 +126,11 @@ body { font-family:'Public Sans',sans-serif; background-color:#faf8ff; }
       const m = META[d.name] || { color:'#004ac6', icon:'star', domain:'' };
       return '<article class="dept-card bg-white rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] overflow-hidden border border-outline-variant/30 flex flex-col">' +
         '<div class="px-6 py-4 flex justify-between items-center" style="background:' + m.color + '">' +
-        '<div class="flex items-center gap-3"><span class="material-symbols-outlined text-white">' + m.icon + '</span>' +
-        '<h3 class="font-board-title text-board-title text-white">' + esc(d.name) + '</h3></div>' +
-        '<span class="text-white/80 font-meta-data text-meta-data">' + esc(m.domain) + '</span></div>' +
+        '<div class="flex items-center gap-3"><span class="material-symbols-outlined" style="color:#3d4a5c">' + m.icon + '</span>' +
+        '<h3 class="font-board-title text-board-title" style="color:#3d4a5c">' + esc(d.name) + '</h3></div>' +
+        '<span class="font-meta-data text-meta-data" style="color:#5a6472">' + esc(m.domain) + '</span></div>' +
         '<div class="grid grid-cols-1 md:grid-cols-2 divide-x divide-outline-variant/20">' +
-        '<div class="p-6"><h4 class="flex items-center gap-2 mb-4 font-button-text text-button-text" style="color:' + m.color + '">' +
+        '<div class="p-6"><h4 class="flex items-center gap-2 mb-4 font-button-text text-button-text" style="color:#6b8fb8">' +
         '<span class="material-symbols-outlined text-[18px]">notifications</span>공지사항</h4>' +
         '<ul class="space-y-1">' + listHtml(d.notices, m.color, false) + '</ul></div>' +
         '<div class="p-6 bg-surface-container-lowest/50"><h4 class="flex items-center gap-2 mb-4 font-button-text text-button-text text-secondary">' +
