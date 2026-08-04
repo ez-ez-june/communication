@@ -1550,57 +1550,76 @@ Private Function LoadHtmlTemplateFile(ByVal fileName As String, ByVal embeddedFa
 End Function
 
 Private Function BuildMajorPressJson(ByVal wsCfg As Worksheet, ByVal wsRes As Worksheet) As String
-    Dim i As Long, j As Long
-    Dim deptName As String, pressUrl As String, includeHint As String
-    Dim html As String, errMsg As String
-    Dim posts As Collection
-    Dim noticesJson As String, pressJson As String
+    Dim i As Long
+    Dim deptName As String
+    Dim noticesJson As String, pressJson As String, hrJson As String
+    Dim noticeLabel As String, pressLabel As String
     Dim json As String
     Dim collected As String
-    Dim p As Variant
 
     collected = Format$(Now, "yyyy-mm-dd hh:nn:ss")
     json = "{""collectedAt"":""" & JsonEscape(collected) & """,""departments"":["
 
     For i = 1 To 4
         deptName = MajorDeptNameByIndex(i)
-        pressUrl = MajorPressUrlByIndex(i)
-        includeHint = MajorPressIncludeByIndex(i)
+        noticeLabel = MajorNoticeLabelByIndex(i)
+        pressLabel = MajorPressLabelByIndex(i)
         noticesJson = BuildPostsJsonForDept(wsCfg, wsRes, deptName)
-        pressJson = ""
-        errMsg = ""
-        html = ""
-        Set posts = Nothing
-
-        If Len(pressUrl) > 0 Then
-            html = GetHtml(pressUrl, errMsg)
-            If Len(errMsg) = 0 And Len(html) > 0 Then
-                Set posts = ParseAnnouncementLinks(html, pressUrl, includeHint, "", MAX_POSTS)
-                If (posts Is Nothing Or posts.Count = 0) And Len(includeHint) > 0 Then
-                    Set posts = ParseAnnouncementLinks(html, pressUrl, "", "", MAX_POSTS)
-                End If
-            End If
-        End If
-
-        If Not posts Is Nothing Then
-            For j = 1 To posts.Count
-                If j > MAX_POSTS Then Exit For
-                p = posts(j)
-                If Len(pressJson) > 0 Then pressJson = pressJson & ","
-                pressJson = pressJson & "{""title"":""" & JsonEscape(CStr(p(0))) & """,""url"":""" & JsonEscape(CStr(p(1))) & """"
-                If UBound(p) >= 2 Then
-                    If Len(Trim$(CStr(p(2)))) > 0 Then pressJson = pressJson & ",""date"":""" & JsonEscape(CStr(p(2))) & """"
-                End If
-                pressJson = pressJson & "}"
-            Next j
-        End If
+        pressJson = FetchPostsJsonFromUrl(MajorPressUrlByIndex(i), MajorPressIncludeByIndex(i))
+        hrJson = ""
 
         If i > 1 Then json = json & ","
-        json = json & "{""name"":""" & JsonEscape(deptName) & """,""ok"":true,""notices"":[" & noticesJson & "],""press"":[" & pressJson & "]}"
+        json = json & "{""name"":""" & JsonEscape(deptName) & """,""ok"":true"
+        json = json & ",""noticeLabel"":""" & JsonEscape(noticeLabel) & """"
+        json = json & ",""pressLabel"":""" & JsonEscape(pressLabel) & """"
+        json = json & ",""notices"":[" & noticesJson & "],""press"":[" & pressJson & "]"
+        ' Climate ministry: add HR (인사동정) as a third section
+        If i = 2 Then
+            hrJson = FetchPostsJsonFromUrl(MajorHrUrlByIndex(i), MajorHrIncludeByIndex(i))
+            json = json & ",""hrLabel"":""" & JsonEscape(LabelHr()) & """"
+            json = json & ",""hr"":[" & hrJson & "]"
+        End If
+        json = json & "}"
     Next i
 
     json = json & "]}"
     BuildMajorPressJson = json
+End Function
+
+Private Function FetchPostsJsonFromUrl(ByVal listUrl As String, ByVal includeHint As String) As String
+    Dim html As String, errMsg As String
+    Dim posts As Collection
+    Dim j As Long
+    Dim p As Variant
+    Dim outJson As String
+
+    outJson = ""
+    If Len(listUrl) = 0 Then
+        FetchPostsJsonFromUrl = outJson
+        Exit Function
+    End If
+
+    html = GetHtml(listUrl, errMsg)
+    If Len(errMsg) = 0 And Len(html) > 0 Then
+        Set posts = ParseAnnouncementLinks(html, listUrl, includeHint, "", MAX_POSTS)
+        If (posts Is Nothing Or posts.Count = 0) And Len(includeHint) > 0 Then
+            Set posts = ParseAnnouncementLinks(html, listUrl, "", "", MAX_POSTS)
+        End If
+    End If
+
+    If Not posts Is Nothing Then
+        For j = 1 To posts.Count
+            If j > MAX_POSTS Then Exit For
+            p = posts(j)
+            If Len(outJson) > 0 Then outJson = outJson & ","
+            outJson = outJson & "{""title"":""" & JsonEscape(CStr(p(0))) & """,""url"":""" & JsonEscape(CStr(p(1))) & """"
+            If UBound(p) >= 2 Then
+                If Len(Trim$(CStr(p(2)))) > 0 Then outJson = outJson & ",""date"":""" & JsonEscape(CStr(p(2))) & """"
+            End If
+            outJson = outJson & "}"
+        Next j
+    End If
+    FetchPostsJsonFromUrl = outJson
 End Function
 
 Private Function BuildPostsJsonForDept(ByVal wsCfg As Worksheet, ByVal wsRes As Worksheet, ByVal targetDept As String) As String
@@ -1680,6 +1699,57 @@ Private Function MajorPressIncludeByIndex(ByVal idx As Long) As String
             MajorPressIncludeByIndex = "enewsView"
         Case Else
             MajorPressIncludeByIndex = "view.do"
+    End Select
+End Function
+
+' 기후에너지환경부 인사동정 (menuId=10527) — same site/parser style as notice (read.do)
+Private Function MajorHrUrlByIndex(ByVal idx As Long) As String
+    If idx = 2 Then
+        MajorHrUrlByIndex = "https://mcee.go.kr/home/web/index.do?menuId=10527"
+    Else
+        MajorHrUrlByIndex = ""
+    End If
+End Function
+
+Private Function MajorHrIncludeByIndex(ByVal idx As Long) As String
+    If idx = 2 Then
+        MajorHrIncludeByIndex = "read.do"
+    Else
+        MajorHrIncludeByIndex = ""
+    End If
+End Function
+
+Private Function LabelNotice() As String
+    LabelNotice = ChrW(&HACF5&) & ChrW(&HC9C0&) & ChrW(&HC0AC&) & ChrW(&HD56D&)
+End Function
+
+Private Function LabelPress() As String
+    LabelPress = ChrW(&HBCF4&) & ChrW(&HB3C4&) & ChrW(&HC790&) & ChrW(&HB8CC&)
+End Function
+
+Private Function LabelHr() As String
+    LabelHr = ChrW(&HC778&) & ChrW(&HC0AC&) & ChrW(&HB3D9&) & ChrW(&HC815&)
+End Function
+
+Private Function LabelWithHr(ByVal baseLabel As String) As String
+    LabelWithHr = baseLabel & "(" & LabelHr() & ")"
+End Function
+
+Private Function MajorNoticeLabelByIndex(ByVal idx As Long) As String
+    Select Case idx
+        Case 1, 3  ' 산업통상부, 고용노동부
+            MajorNoticeLabelByIndex = LabelWithHr(LabelNotice())
+        Case Else
+            MajorNoticeLabelByIndex = LabelNotice()
+    End Select
+End Function
+
+Private Function MajorPressLabelByIndex(ByVal idx As Long) As String
+    Select Case idx
+        Case 4  ' 외교부
+            MajorPressLabelByIndex = LabelWithHr(LabelPress())
+        Case Else
+            MajorPressLabelByIndex = LabelPress()
     End Select
 End Function
 
@@ -2367,45 +2437,49 @@ Private Function EmbeddedMajorPressTemplatePc() As String
     b64 = b64 & "bWQ6cHgtY29udGFpbmVyLXBhZGRpbmcgcHktOCBwdC0zMiBtYXgtdy1bMTQ0MHB4XSBteC1hdXRvIHctZnVsbCI+DQo8ZGl2IGNsYXNzPSJmbGV4IGZsZXgtY29sIG1kOmZsZXgtcm93IGp1c3RpZnktYmV0d2VlbiBpdGVtcy1zdGFydCBt"
     b64 = b64 & "ZDppdGVtcy1jZW50ZXIgbWItOCBib3JkZXIgYm9yZGVyLW91dGxpbmUtdmFyaWFudCBiZy1zdXJmYWNlLWNvbnRhaW5lci1sb3cgcm91bmRlZC14bCBweC02IHB5LTMgZ2FwLTQiPg0KPGRpdiBjbGFzcz0iZmxleCBpdGVtcy1jZW50ZXIg"
     b64 = b64 & "Z2FwLTQgZmxleC13cmFwIj4NCjxzcGFuIGNsYXNzPSJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMSBmb250LW1ldGEtZGF0YSB0ZXh0LW1ldGEtZGF0YSB0ZXh0LW9uLXN1cmZhY2UtdmFyaWFudCIgaWQ9Im1ldGFMaW5lIj4NCjxzcGFuIGNs"
-    b64 = b64 & "YXNzPSJtYXRlcmlhbC1zeW1ib2xzLW91dGxpbmVkIHRleHQtWzE2cHhdIj5zY2hlZHVsZTwvc3Bhbj7rjbDsnbTthLAg7KSA67mEIOykkeKApg0KPC9zcGFuPg0KPC9kaXY+DQo8ZGl2IGNsYXNzPSJmbGV4IGdhcC0yIj4NCjxzcGFuIGNs"
-    b64 = b64 & "YXNzPSJweC0zIHB5LTEgcm91bmRlZC1mdWxsIGJvcmRlciBib3JkZXItcHJpbWFyeSB0ZXh0LXByaW1hcnkgZm9udC1tZXRhLWRhdGEgdGV4dC1tZXRhLWRhdGEgYmctd2hpdGUiPuqzteyngOyCrO2VrTwvc3Bhbj4NCjxzcGFuIGNsYXNz"
-    b64 = b64 & "PSJweC0zIHB5LTEgcm91bmRlZC1mdWxsIGJvcmRlciBib3JkZXItc2Vjb25kYXJ5IHRleHQtc2Vjb25kYXJ5IGZvbnQtbWV0YS1kYXRhIHRleHQtbWV0YS1kYXRhIGJnLXdoaXRlIj7rs7Trj4TsnpDro4w8L3NwYW4+DQo8L2Rpdj4NCjwv"
-    b64 = b64 & "ZGl2Pg0KPHNlY3Rpb24gY2xhc3M9ImZsZXggZmxleC1jb2wgZ2FwLTgiIGlkPSJib2FyZCI+PC9zZWN0aW9uPg0KPC9tYWluPg0KDQo8Zm9vdGVyIGNsYXNzPSJ3LWZ1bGwgcHktNCBweC1jb250YWluZXItcGFkZGluZyBmbGV4IGZsZXgt"
-    b64 = b64 & "Y29sIG1kOmZsZXgtcm93IGp1c3RpZnktYmV0d2VlbiBpdGVtcy1jZW50ZXIgZ2FwLTMgYmctc3VyZmFjZS1kaW0gdGV4dC1vbi1zdXJmYWNlLXZhcmlhbnQgYm9yZGVyLXQgYm9yZGVyLW91dGxpbmUtdmFyaWFudCBtdC1hdXRvIj4NCjxz"
-    b64 = b64 & "cGFuIGNsYXNzPSJmb250LWJvbGQgZm9udC1tZXRhLWRhdGEgdGV4dC1tZXRhLWRhdGEiPuuMgO2VnOuvvOq1rSDsoJXrtoAgwrcg7KO87JqU67aA7LKYIOuztOuTnDwvc3Bhbj4NCjxkaXYgY2xhc3M9ImZsZXggZ2FwLTYiPg0KPGEgY2xh"
-    b64 = b64 & "c3M9ImZvbnQtbWV0YS1kYXRhIHRleHQtbWV0YS1kYXRhIGhvdmVyOnRleHQtcHJpbWFyeSIgaHJlZj0iZ292X25vdGljZV9ib2FyZC5odG1sIj5QQyDqs7Xsp4A8L2E+DQo8YSBjbGFzcz0iZm9udC1tZXRhLWRhdGEgdGV4dC1tZXRhLWRh"
-    b64 = b64 & "dGEgaG92ZXI6dGV4dC1wcmltYXJ5IiBocmVmPSJnb3ZfbWFqb3JfcHJlc3NfYm9hcmRfbW9iaWxlLmh0bWwiPuuqqOuwlOydvCDtlajqu5jrs7TquLA8L2E+DQo8L2Rpdj4NCjwvZm9vdGVyPg0KDQo8c2NyaXB0IGlkPSJtYWpvci1kYXRh"
-    b64 = b64 & "IiB0eXBlPSJhcHBsaWNhdGlvbi9qc29uIj4NCiUlTUFKT1JfSlNPTiUlDQo8L3NjcmlwdD4NCjxzY3JpcHQ+DQooZnVuY3Rpb24gKCkgew0KICBjb25zdCBNRVRBID0gew0KICAgICfsgrDsl4XthrXsg4HrtoAnOiB7IGNvbG9yOicjYjdk"
-    b64 = b64 & "MGVhJywgaWNvbjonZmFjdG9yeScsIGRvbWFpbjonTU9USVIuR08uS1InIH0sDQogICAgJ+q4sO2bhOyXkOuEiOyngO2ZmOqyveu2gCc6IHsgY29sb3I6JyNiOGRkZDYnLCBpY29uOidlY28nLCBkb21haW46J01DRUUuR08uS1InIH0sDQog"
-    b64 = b64 & "ICAgJ+qzoOyaqeuFuOuPmeu2gCc6IHsgY29sb3I6JyNmMGQwYjAnLCBpY29uOidncm91cHMnLCBkb21haW46J01PRUwuR08uS1InIH0sDQogICAgJ+yZuOq1kOu2gCc6IHsgY29sb3I6JyNjNWM4ZTgnLCBpY29uOidwdWJsaWMnLCBkb21h"
-    b64 = b64 & "aW46J01PRkEuR08uS1InIH0NCiAgfTsNCiAgY29uc3QgT1JERVIgPSBbJ+yCsOyXhe2GteyDgeu2gCcsJ+q4sO2bhOyXkOuEiOyngO2ZmOqyveu2gCcsJ+qzoOyaqeuFuOuPmeu2gCcsJ+yZuOq1kOu2gCddOw0KICBmdW5jdGlvbiBlc2Mo"
-    b64 = b64 & "cyl7IHJldHVybiBTdHJpbmcocz8/JycpLnJlcGxhY2UoLyYvZywnJmFtcDsnKS5yZXBsYWNlKC88L2csJyZsdDsnKS5yZXBsYWNlKC8+L2csJyZndDsnKS5yZXBsYWNlKC8iL2csJyZxdW90OycpOyB9DQogIGZ1bmN0aW9uIGxpc3RIdG1s"
-    b64 = b64 & "KGl0ZW1zLCBhY2NlbnQsIGlzUHJlc3MpIHsNCiAgICBjb25zdCBhcnIgPSAoaXRlbXN8fFtdKS5zbGljZSgwLDUpOw0KICAgIGlmICghYXJyLmxlbmd0aCkgcmV0dXJuICc8bGkgY2xhc3M9InB5LTMgdGV4dC1vbi1zdXJmYWNlLXZhcmlh"
-    b64 = b64 & "bnQgZm9udC1tZXRhLWRhdGEgdGV4dC1tZXRhLWRhdGEiPu2RnOyLnO2VoCDtla3rqqnsnbQg7JeG7Iq164uI64ukLjwvbGk+JzsNCiAgICByZXR1cm4gYXJyLm1hcChmdW5jdGlvbihwLGkpew0KICAgICAgY29uc3QgbGFzdCA9IGkgPT09"
-    b64 = b64 & "IGFyci5sZW5ndGgtMTsNCiAgICAgIGNvbnN0IGJvcmRlciA9IGxhc3QgPyAnJyA6IChpc1ByZXNzID8gJyBib3JkZXItYiBib3JkZXItc2Vjb25kYXJ5LzEwJyA6ICcgYm9yZGVyLWIgYm9yZGVyLW91dGxpbmUtdmFyaWFudC8xMCcpOw0K"
-    b64 = b64 & "ICAgICAgY29uc3QgZGF0ZSA9IHAuZGF0ZSA/ICc8c3BhbiBjbGFzcz0iZm9udC1tZXRhLWRhdGEgdGV4dC1tZXRhLWRhdGEgdGV4dC1vbi1zdXJmYWNlLXZhcmlhbnQgd2hpdGVzcGFjZS1ub3dyYXAiPicgKyBlc2MocC5kYXRlKSArICc8"
-    b64 = b64 & "L3NwYW4+JyA6ICcnOw0KICAgICAgcmV0dXJuICc8bGkgY2xhc3M9ImZsZXgganVzdGlmeS1iZXR3ZWVuIGl0ZW1zLXN0YXJ0IGdhcC00IHB5LTInICsgYm9yZGVyICsgJyI+JyArDQogICAgICAgICc8YSBjbGFzcz0iZm9udC1saXN0LWl0"
-    b64 = b64 & "ZW0gdGV4dC1saXN0LWl0ZW0gdGV4dC1vbi1zdXJmYWNlIGxpbmUtY2xhbXAtMSBob3ZlcjpvcGFjaXR5LTgwIG5vLXVuZGVybGluZSIgc3R5bGU9ImNvbG9yOmluaGVyaXQiIGhyZWY9IicgKyBlc2MocC51cmx8fCcjJykgKyAnIiB0YXJn"
-    b64 = b64 & "ZXQ9Il9ibGFuayIgcmVsPSJub29wZW5lciBub3JlZmVycmVyIj4nICsgZXNjKHAudGl0bGUpICsgJzwvYT4nICsgZGF0ZSArICc8L2xpPic7DQogICAgfSkuam9pbignJyk7DQogIH0NCiAgZnVuY3Rpb24gcmVuZGVyKGRhdGEpIHsNCiAg"
-    b64 = b64 & "ICBjb25zdCBib2FyZCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdib2FyZCcpOw0KICAgIGNvbnN0IG1hcCA9IHt9Ow0KICAgIChkYXRhLmRlcGFydG1lbnRzfHxbXSkuZm9yRWFjaChmdW5jdGlvbihkKXsgbWFwW2QubmFtZV09ZDsg"
-    b64 = b64 & "fSk7DQogICAgY29uc3QgZGVwdHMgPSBPUkRFUi5tYXAoZnVuY3Rpb24obil7IHJldHVybiBtYXBbbl0gfHwgeyBuYW1lOm4sIG9rOmZhbHNlLCBub3RpY2VzOltdLCBwcmVzczpbXSB9OyB9KTsNCiAgICBkb2N1bWVudC5nZXRFbGVtZW50"
-    b64 = b64 & "QnlJZCgnbWV0YUxpbmUnKS5pbm5lckhUTUwgPQ0KICAgICAgJzxzcGFuIGNsYXNzPSJtYXRlcmlhbC1zeW1ib2xzLW91dGxpbmVkIHRleHQtWzE2cHhdIj5zY2hlZHVsZTwvc3Bhbj7stZzqt7wg7JeF642w7J207Yq4OiA8c3Ryb25nIGNs"
-    b64 = b64 & "YXNzPSJtbC0xIj4nICsgZXNjKGRhdGEuY29sbGVjdGVkQXR8fCctJykgKyAnPC9zdHJvbmc+JyArDQogICAgICAnPHNwYW4gY2xhc3M9Im14LTIiPnw8L3NwYW4+66qo64uI7YSw66eBIOu2gOyymDogPHN0cm9uZz4nICsgZGVwdHMubGVu"
-    b64 = b64 & "Z3RoICsgJ+qwnDwvc3Ryb25nPic7DQogICAgYm9hcmQuaW5uZXJIVE1MID0gZGVwdHMubWFwKGZ1bmN0aW9uKGQpew0KICAgICAgY29uc3QgbSA9IE1FVEFbZC5uYW1lXSB8fCB7IGNvbG9yOicjMDA0YWM2JywgaWNvbjonc3RhcicsIGRv"
-    b64 = b64 & "bWFpbjonJyB9Ow0KICAgICAgcmV0dXJuICc8YXJ0aWNsZSBjbGFzcz0iZGVwdC1jYXJkIGJnLXdoaXRlIHJvdW5kZWQteGwgc2hhZG93LVswcHhfNHB4XzEycHhfcmdiYSgwLDAsMCwwLjA1KV0gb3ZlcmZsb3ctaGlkZGVuIGJvcmRlciBi"
-    b64 = b64 & "b3JkZXItb3V0bGluZS12YXJpYW50LzMwIGZsZXggZmxleC1jb2wiPicgKw0KICAgICAgICAnPGRpdiBjbGFzcz0icHgtNiBweS00IGZsZXgganVzdGlmeS1iZXR3ZWVuIGl0ZW1zLWNlbnRlciIgc3R5bGU9ImJhY2tncm91bmQ6JyArIG0u"
-    b64 = b64 & "Y29sb3IgKyAnIj4nICsNCiAgICAgICAgJzxkaXYgY2xhc3M9ImZsZXggaXRlbXMtY2VudGVyIGdhcC0zIj48c3BhbiBjbGFzcz0ibWF0ZXJpYWwtc3ltYm9scy1vdXRsaW5lZCIgc3R5bGU9ImNvbG9yOiMzZDRhNWMiPicgKyBtLmljb24g"
-    b64 = b64 & "KyAnPC9zcGFuPicgKw0KICAgICAgICAnPGgzIGNsYXNzPSJmb250LWJvYXJkLXRpdGxlIHRleHQtYm9hcmQtdGl0bGUiIHN0eWxlPSJjb2xvcjojM2Q0YTVjIj4nICsgZXNjKGQubmFtZSkgKyAnPC9oMz48L2Rpdj4nICsNCiAgICAgICAg"
-    b64 = b64 & "JzxzcGFuIGNsYXNzPSJmb250LW1ldGEtZGF0YSB0ZXh0LW1ldGEtZGF0YSIgc3R5bGU9ImNvbG9yOiM1YTY0NzIiPicgKyBlc2MobS5kb21haW4pICsgJzwvc3Bhbj48L2Rpdj4nICsNCiAgICAgICAgJzxkaXYgY2xhc3M9ImdyaWQgZ3Jp"
-    b64 = b64 & "ZC1jb2xzLTEgbWQ6Z3JpZC1jb2xzLTIgZGl2aWRlLXggZGl2aWRlLW91dGxpbmUtdmFyaWFudC8yMCI+JyArDQogICAgICAgICc8ZGl2IGNsYXNzPSJwLTYiPjxoNCBjbGFzcz0iZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTIgbWItNCBmb250"
-    b64 = b64 & "LWJ1dHRvbi10ZXh0IHRleHQtYnV0dG9uLXRleHQiIHN0eWxlPSJjb2xvcjojNmI4ZmI4Ij4nICsNCiAgICAgICAgJzxzcGFuIGNsYXNzPSJtYXRlcmlhbC1zeW1ib2xzLW91dGxpbmVkIHRleHQtWzE4cHhdIj5ub3RpZmljYXRpb25zPC9z"
-    b64 = b64 & "cGFuPuqzteyngOyCrO2VrTwvaDQ+JyArDQogICAgICAgICc8dWwgY2xhc3M9InNwYWNlLXktMSI+JyArIGxpc3RIdG1sKGQubm90aWNlcywgbS5jb2xvciwgZmFsc2UpICsgJzwvdWw+PC9kaXY+JyArDQogICAgICAgICc8ZGl2IGNsYXNz"
-    b64 = b64 & "PSJwLTYgYmctc3VyZmFjZS1jb250YWluZXItbG93ZXN0LzUwIj48aDQgY2xhc3M9ImZsZXggaXRlbXMtY2VudGVyIGdhcC0yIG1iLTQgZm9udC1idXR0b24tdGV4dCB0ZXh0LWJ1dHRvbi10ZXh0IHRleHQtc2Vjb25kYXJ5Ij4nICsNCiAg"
-    b64 = b64 & "ICAgICAgJzxzcGFuIGNsYXNzPSJtYXRlcmlhbC1zeW1ib2xzLW91dGxpbmVkIHRleHQtWzE4cHhdIj5uZXdzcGFwZXI8L3NwYW4+67O064+E7J6Q66OMPC9oND4nICsNCiAgICAgICAgJzx1bCBjbGFzcz0ic3BhY2UteS0xIj4nICsgbGlz"
-    b64 = b64 & "dEh0bWwoZC5wcmVzcywgbS5jb2xvciwgdHJ1ZSkgKyAnPC91bD48L2Rpdj4nICsNCiAgICAgICAgJzwvZGl2PjwvYXJ0aWNsZT4nOw0KICAgIH0pLmpvaW4oJycpOw0KICB9DQogIGZ1bmN0aW9uIGxvYWQoKXsNCiAgICBjb25zdCByYXcg"
-    b64 = b64 & "PSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbWFqb3ItZGF0YScpLnRleHRDb250ZW50LnRyaW0oKTsNCiAgICBsZXQgZGF0YSA9IHsgY29sbGVjdGVkQXQ6JycsIGRlcGFydG1lbnRzOltdIH07DQogICAgdHJ5IHsgaWYgKHJhdyAmJiBy"
-    b64 = b64 & "YXcuY2hhckF0KDApPT09J3snKSBkYXRhID0gSlNPTi5wYXJzZShyYXcpOyB9IGNhdGNoKGUpeyBjb25zb2xlLmVycm9yKGUpOyB9DQogICAgcmVuZGVyKGRhdGEpOw0KICB9DQogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdidG5SZWxv"
-    b64 = b64 & "YWQnKS5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsIGZ1bmN0aW9uKCl7IGxvY2F0aW9uLnJlbG9hZCgpOyB9KTsNCiAgbG9hZCgpOw0KfSkoKTsNCjwvc2NyaXB0Pg0KPC9ib2R5Pg0KPC9odG1sPg0K"
+    b64 = b64 & "YXNzPSJtYXRlcmlhbC1zeW1ib2xzLW91dGxpbmVkIHRleHQtWzE2cHhdIj5zY2hlZHVsZTwvc3Bhbj7rjbDsnbTthLAg7KSA67mEIOykkeKApg0KPC9zcGFuPg0KPC9kaXY+DQo8ZGl2IGNsYXNzPSJmbGV4IGdhcC0yIGZsZXgtd3JhcCI+"
+    b64 = b64 & "DQo8c3BhbiBjbGFzcz0icHgtMyBweS0xIHJvdW5kZWQtZnVsbCBib3JkZXIgYm9yZGVyLXByaW1hcnkgdGV4dC1wcmltYXJ5IGZvbnQtbWV0YS1kYXRhIHRleHQtbWV0YS1kYXRhIGJnLXdoaXRlIj7qs7Xsp4Dsgqztla08L3NwYW4+DQo8"
+    b64 = b64 & "c3BhbiBjbGFzcz0icHgtMyBweS0xIHJvdW5kZWQtZnVsbCBib3JkZXIgYm9yZGVyLXNlY29uZGFyeSB0ZXh0LXNlY29uZGFyeSBmb250LW1ldGEtZGF0YSB0ZXh0LW1ldGEtZGF0YSBiZy13aGl0ZSI+67O064+E7J6Q66OMPC9zcGFuPg0K"
+    b64 = b64 & "PHNwYW4gY2xhc3M9InB4LTMgcHktMSByb3VuZGVkLWZ1bGwgYm9yZGVyIGJvcmRlci10ZXJ0aWFyeSB0ZXh0LXRlcnRpYXJ5IGZvbnQtbWV0YS1kYXRhIHRleHQtbWV0YS1kYXRhIGJnLXdoaXRlIj7snbjsgqzrj5nsoJU8L3NwYW4+DQo8"
+    b64 = b64 & "L2Rpdj4NCjwvZGl2Pg0KPHNlY3Rpb24gY2xhc3M9ImZsZXggZmxleC1jb2wgZ2FwLTgiIGlkPSJib2FyZCI+PC9zZWN0aW9uPg0KPC9tYWluPg0KDQo8Zm9vdGVyIGNsYXNzPSJ3LWZ1bGwgcHktNCBweC1jb250YWluZXItcGFkZGluZyBm"
+    b64 = b64 & "bGV4IGZsZXgtY29sIG1kOmZsZXgtcm93IGp1c3RpZnktYmV0d2VlbiBpdGVtcy1jZW50ZXIgZ2FwLTMgYmctc3VyZmFjZS1kaW0gdGV4dC1vbi1zdXJmYWNlLXZhcmlhbnQgYm9yZGVyLXQgYm9yZGVyLW91dGxpbmUtdmFyaWFudCBtdC1h"
+    b64 = b64 & "dXRvIj4NCjxzcGFuIGNsYXNzPSJmb250LWJvbGQgZm9udC1tZXRhLWRhdGEgdGV4dC1tZXRhLWRhdGEiPuuMgO2VnOuvvOq1rSDsoJXrtoAgwrcg7KO87JqU67aA7LKYIOuztOuTnDwvc3Bhbj4NCjxkaXYgY2xhc3M9ImZsZXggZ2FwLTYi"
+    b64 = b64 & "Pg0KPGEgY2xhc3M9ImZvbnQtbWV0YS1kYXRhIHRleHQtbWV0YS1kYXRhIGhvdmVyOnRleHQtcHJpbWFyeSIgaHJlZj0iZ292X25vdGljZV9ib2FyZC5odG1sIj5QQyDqs7Xsp4A8L2E+DQo8YSBjbGFzcz0iZm9udC1tZXRhLWRhdGEgdGV4"
+    b64 = b64 & "dC1tZXRhLWRhdGEgaG92ZXI6dGV4dC1wcmltYXJ5IiBocmVmPSJnb3ZfbWFqb3JfcHJlc3NfYm9hcmRfbW9iaWxlLmh0bWwiPuuqqOuwlOydvCDtlajqu5jrs7TquLA8L2E+DQo8L2Rpdj4NCjwvZm9vdGVyPg0KDQo8c2NyaXB0IGlkPSJt"
+    b64 = b64 & "YWpvci1kYXRhIiB0eXBlPSJhcHBsaWNhdGlvbi9qc29uIj4NCiUlTUFKT1JfSlNPTiUlDQo8L3NjcmlwdD4NCjxzY3JpcHQ+DQooZnVuY3Rpb24gKCkgew0KICBjb25zdCBNRVRBID0gew0KICAgICfsgrDsl4XthrXsg4HrtoAnOiB7IGNv"
+    b64 = b64 & "bG9yOicjYjdkMGVhJywgaWNvbjonZmFjdG9yeScsIGRvbWFpbjonTU9USVIuR08uS1InIH0sDQogICAgJ+q4sO2bhOyXkOuEiOyngO2ZmOqyveu2gCc6IHsgY29sb3I6JyNiOGRkZDYnLCBpY29uOidlY28nLCBkb21haW46J01DRUUuR08u"
+    b64 = b64 & "S1InIH0sDQogICAgJ+qzoOyaqeuFuOuPmeu2gCc6IHsgY29sb3I6JyNmMGQwYjAnLCBpY29uOidncm91cHMnLCBkb21haW46J01PRUwuR08uS1InIH0sDQogICAgJ+yZuOq1kOu2gCc6IHsgY29sb3I6JyNjNWM4ZTgnLCBpY29uOidwdWJs"
+    b64 = b64 & "aWMnLCBkb21haW46J01PRkEuR08uS1InIH0NCiAgfTsNCiAgY29uc3QgT1JERVIgPSBbJ+yCsOyXhe2GteyDgeu2gCcsJ+q4sO2bhOyXkOuEiOyngO2ZmOqyveu2gCcsJ+qzoOyaqeuFuOuPmeu2gCcsJ+yZuOq1kOu2gCddOw0KICBmdW5j"
+    b64 = b64 & "dGlvbiBlc2Mocyl7IHJldHVybiBTdHJpbmcocz8/JycpLnJlcGxhY2UoLyYvZywnJmFtcDsnKS5yZXBsYWNlKC88L2csJyZsdDsnKS5yZXBsYWNlKC8+L2csJyZndDsnKS5yZXBsYWNlKC8iL2csJyZxdW90OycpOyB9DQogIGZ1bmN0aW9u"
+    b64 = b64 & "IGxpc3RIdG1sKGl0ZW1zLCBpc1ByZXNzKSB7DQogICAgY29uc3QgYXJyID0gKGl0ZW1zfHxbXSkuc2xpY2UoMCw1KTsNCiAgICBpZiAoIWFyci5sZW5ndGgpIHJldHVybiAnPGxpIGNsYXNzPSJweS0zIHRleHQtb24tc3VyZmFjZS12YXJp"
+    b64 = b64 & "YW50IGZvbnQtbWV0YS1kYXRhIHRleHQtbWV0YS1kYXRhIj7tkZzsi5ztlaAg7ZWt66qp7J20IOyXhuyKteuLiOuLpC48L2xpPic7DQogICAgcmV0dXJuIGFyci5tYXAoZnVuY3Rpb24ocCxpKXsNCiAgICAgIGNvbnN0IGxhc3QgPSBpID09"
+    b64 = b64 & "PSBhcnIubGVuZ3RoLTE7DQogICAgICBjb25zdCBib3JkZXIgPSBsYXN0ID8gJycgOiAoaXNQcmVzcyA/ICcgYm9yZGVyLWIgYm9yZGVyLXNlY29uZGFyeS8xMCcgOiAnIGJvcmRlci1iIGJvcmRlci1vdXRsaW5lLXZhcmlhbnQvMTAnKTsN"
+    b64 = b64 & "CiAgICAgIGNvbnN0IGRhdGUgPSBwLmRhdGUgPyAnPHNwYW4gY2xhc3M9ImZvbnQtbWV0YS1kYXRhIHRleHQtbWV0YS1kYXRhIHRleHQtb24tc3VyZmFjZS12YXJpYW50IHdoaXRlc3BhY2Utbm93cmFwIj4nICsgZXNjKHAuZGF0ZSkgKyAn"
+    b64 = b64 & "PC9zcGFuPicgOiAnJzsNCiAgICAgIHJldHVybiAnPGxpIGNsYXNzPSJmbGV4IGp1c3RpZnktYmV0d2VlbiBpdGVtcy1zdGFydCBnYXAtNCBweS0yJyArIGJvcmRlciArICciPicgKw0KICAgICAgICAnPGEgY2xhc3M9ImZvbnQtbGlzdC1p"
+    b64 = b64 & "dGVtIHRleHQtbGlzdC1pdGVtIHRleHQtb24tc3VyZmFjZSBsaW5lLWNsYW1wLTEgaG92ZXI6b3BhY2l0eS04MCBuby11bmRlcmxpbmUiIHN0eWxlPSJjb2xvcjppbmhlcml0IiBocmVmPSInICsgZXNjKHAudXJsfHwnIycpICsgJyIgdGFy"
+    b64 = b64 & "Z2V0PSJfYmxhbmsiIHJlbD0ibm9vcGVuZXIgbm9yZWZlcnJlciI+JyArIGVzYyhwLnRpdGxlKSArICc8L2E+JyArIGRhdGUgKyAnPC9saT4nOw0KICAgIH0pLmpvaW4oJycpOw0KICB9DQogIGZ1bmN0aW9uIHNlY3Rpb25IdG1sKHRpdGxl"
+    b64 = b64 & "LCBpY29uLCBjb2xvclN0eWxlLCBpdGVtcywgaXNQcmVzcywgZXh0cmFDbGFzcykgew0KICAgIHJldHVybiAnPGRpdiBjbGFzcz0icC02JyArIChleHRyYUNsYXNzIHx8ICcnKSArICciPjxoNCBjbGFzcz0iZmxleCBpdGVtcy1jZW50ZXIg"
+    b64 = b64 & "Z2FwLTIgbWItNCBmb250LWJ1dHRvbi10ZXh0IHRleHQtYnV0dG9uLXRleHQiIHN0eWxlPSInICsgY29sb3JTdHlsZSArICciPicgKw0KICAgICAgJzxzcGFuIGNsYXNzPSJtYXRlcmlhbC1zeW1ib2xzLW91dGxpbmVkIHRleHQtWzE4cHhd"
+    b64 = b64 & "Ij4nICsgaWNvbiArICc8L3NwYW4+JyArIGVzYyh0aXRsZSkgKyAnPC9oND4nICsNCiAgICAgICc8dWwgY2xhc3M9InNwYWNlLXktMSI+JyArIGxpc3RIdG1sKGl0ZW1zLCBpc1ByZXNzKSArICc8L3VsPjwvZGl2Pic7DQogIH0NCiAgZnVu"
+    b64 = b64 & "Y3Rpb24gcmVuZGVyKGRhdGEpIHsNCiAgICBjb25zdCBib2FyZCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdib2FyZCcpOw0KICAgIGNvbnN0IG1hcCA9IHt9Ow0KICAgIChkYXRhLmRlcGFydG1lbnRzfHxbXSkuZm9yRWFjaChmdW5j"
+    b64 = b64 & "dGlvbihkKXsgbWFwW2QubmFtZV09ZDsgfSk7DQogICAgY29uc3QgZGVwdHMgPSBPUkRFUi5tYXAoZnVuY3Rpb24obil7IHJldHVybiBtYXBbbl0gfHwgeyBuYW1lOm4sIG9rOmZhbHNlLCBub3RpY2VzOltdLCBwcmVzczpbXSwgaHI6W10g"
+    b64 = b64 & "fTsgfSk7DQogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ21ldGFMaW5lJykuaW5uZXJIVE1MID0NCiAgICAgICc8c3BhbiBjbGFzcz0ibWF0ZXJpYWwtc3ltYm9scy1vdXRsaW5lZCB0ZXh0LVsxNnB4XSI+c2NoZWR1bGU8L3NwYW4+"
+    b64 = b64 & "7LWc6re8IOyXheuNsOydtO2KuDogPHN0cm9uZyBjbGFzcz0ibWwtMSI+JyArIGVzYyhkYXRhLmNvbGxlY3RlZEF0fHwnLScpICsgJzwvc3Ryb25nPicgKw0KICAgICAgJzxzcGFuIGNsYXNzPSJteC0yIj58PC9zcGFuPuuqqOuLiO2EsOun"
+    b64 = b64 & "gSDrtoDsspg6IDxzdHJvbmc+JyArIGRlcHRzLmxlbmd0aCArICfqsJw8L3N0cm9uZz4nOw0KICAgIGJvYXJkLmlubmVySFRNTCA9IGRlcHRzLm1hcChmdW5jdGlvbihkKXsNCiAgICAgIGNvbnN0IG0gPSBNRVRBW2QubmFtZV0gfHwgeyBj"
+    b64 = b64 & "b2xvcjonIzAwNGFjNicsIGljb246J3N0YXInLCBkb21haW46JycgfTsNCiAgICAgIGNvbnN0IG5vdGljZUxhYmVsID0gZC5ub3RpY2VMYWJlbCB8fCAn6rO17KeA7IKs7ZWtJzsNCiAgICAgIGNvbnN0IHByZXNzTGFiZWwgPSBkLnByZXNz"
+    b64 = b64 & "TGFiZWwgfHwgJ+uztOuPhOyekOujjCc7DQogICAgICBjb25zdCBockxhYmVsID0gZC5ockxhYmVsIHx8ICfsnbjsgqzrj5nsoJUnOw0KICAgICAgY29uc3QgaGFzSHIgPSBBcnJheS5pc0FycmF5KGQuaHIpOw0KICAgICAgY29uc3QgY29s"
+    b64 = b64 & "cyA9IGhhc0hyID8gJ21kOmdyaWQtY29scy0zJyA6ICdtZDpncmlkLWNvbHMtMic7DQogICAgICBsZXQgYm9keSA9IHNlY3Rpb25IdG1sKG5vdGljZUxhYmVsLCAnbm90aWZpY2F0aW9ucycsICdjb2xvcjojNmI4ZmI4JywgZC5ub3RpY2Vz"
+    b64 = b64 & "LCBmYWxzZSwgJycpOw0KICAgICAgYm9keSArPSBzZWN0aW9uSHRtbChwcmVzc0xhYmVsLCAnbmV3c3BhcGVyJywgJ2NvbG9yOiNjOTk1NmUnLCBkLnByZXNzLCB0cnVlLCAnIGJnLXN1cmZhY2UtY29udGFpbmVyLWxvd2VzdC81MCcpOw0K"
+    b64 = b64 & "ICAgICAgaWYgKGhhc0hyKSB7DQogICAgICAgIGJvZHkgKz0gc2VjdGlvbkh0bWwoaHJMYWJlbCwgJ2JhZGdlJywgJ2NvbG9yOiNiMDg5NzgnLCBkLmhyLCBmYWxzZSwgJycpOw0KICAgICAgfQ0KICAgICAgcmV0dXJuICc8YXJ0aWNsZSBj"
+    b64 = b64 & "bGFzcz0iZGVwdC1jYXJkIGJnLXdoaXRlIHJvdW5kZWQteGwgc2hhZG93LVswcHhfNHB4XzEycHhfcmdiYSgwLDAsMCwwLjA1KV0gb3ZlcmZsb3ctaGlkZGVuIGJvcmRlciBib3JkZXItb3V0bGluZS12YXJpYW50LzMwIGZsZXggZmxleC1j"
+    b64 = b64 & "b2wiPicgKw0KICAgICAgICAnPGRpdiBjbGFzcz0icHgtNiBweS00IGZsZXgganVzdGlmeS1iZXR3ZWVuIGl0ZW1zLWNlbnRlciIgc3R5bGU9ImJhY2tncm91bmQ6JyArIG0uY29sb3IgKyAnIj4nICsNCiAgICAgICAgJzxkaXYgY2xhc3M9"
+    b64 = b64 & "ImZsZXggaXRlbXMtY2VudGVyIGdhcC0zIj48c3BhbiBjbGFzcz0ibWF0ZXJpYWwtc3ltYm9scy1vdXRsaW5lZCIgc3R5bGU9ImNvbG9yOiMzZDRhNWMiPicgKyBtLmljb24gKyAnPC9zcGFuPicgKw0KICAgICAgICAnPGgzIGNsYXNzPSJm"
+    b64 = b64 & "b250LWJvYXJkLXRpdGxlIHRleHQtYm9hcmQtdGl0bGUiIHN0eWxlPSJjb2xvcjojM2Q0YTVjIj4nICsgZXNjKGQubmFtZSkgKyAnPC9oMz48L2Rpdj4nICsNCiAgICAgICAgJzxzcGFuIGNsYXNzPSJmb250LW1ldGEtZGF0YSB0ZXh0LW1l"
+    b64 = b64 & "dGEtZGF0YSIgc3R5bGU9ImNvbG9yOiM1YTY0NzIiPicgKyBlc2MobS5kb21haW4pICsgJzwvc3Bhbj48L2Rpdj4nICsNCiAgICAgICAgJzxkaXYgY2xhc3M9ImdyaWQgZ3JpZC1jb2xzLTEgJyArIGNvbHMgKyAnIGRpdmlkZS14IGRpdmlk"
+    b64 = b64 & "ZS1vdXRsaW5lLXZhcmlhbnQvMjAiPicgKyBib2R5ICsgJzwvZGl2PjwvYXJ0aWNsZT4nOw0KICAgIH0pLmpvaW4oJycpOw0KICB9DQogIGZ1bmN0aW9uIGxvYWQoKXsNCiAgICBjb25zdCByYXcgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJ"
+    b64 = b64 & "ZCgnbWFqb3ItZGF0YScpLnRleHRDb250ZW50LnRyaW0oKTsNCiAgICBsZXQgZGF0YSA9IHsgY29sbGVjdGVkQXQ6JycsIGRlcGFydG1lbnRzOltdIH07DQogICAgdHJ5IHsgaWYgKHJhdyAmJiByYXcuY2hhckF0KDApPT09J3snKSBkYXRh"
+    b64 = b64 & "ID0gSlNPTi5wYXJzZShyYXcpOyB9IGNhdGNoKGUpeyBjb25zb2xlLmVycm9yKGUpOyB9DQogICAgcmVuZGVyKGRhdGEpOw0KICB9DQogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdidG5SZWxvYWQnKS5hZGRFdmVudExpc3RlbmVyKCdj"
+    b64 = b64 & "bGljaycsIGZ1bmN0aW9uKCl7IGxvY2F0aW9uLnJlbG9hZCgpOyB9KTsNCiAgbG9hZCgpOw0KfSkoKTsNCjwvc2NyaXB0Pg0KPC9ib2R5Pg0KPC9odG1sPg0K"
     EmbeddedMajorPressTemplatePc = DecodeBase64Utf8(b64)
 End Function
 
@@ -2455,29 +2529,35 @@ Private Function EmbeddedMajorPressTemplateMobile() As String
     b64 = b64 & "dCBmb250LW1ldGEtZGF0YSB0ZXh0LW1ldGEtZGF0YSI+7ZWt66qpIOyXhuydjDwvbGk+JzsNCiAgICByZXR1cm4gbGlzdC5tYXAoZnVuY3Rpb24ocCxpKXsNCiAgICAgIHJldHVybiAnPGxpIGNsYXNzPSJwLTMgZm9udC1saXN0LWl0ZW0g"
     b64 = b64 & "dGV4dC1saXN0LWl0ZW0gZmxleCBnYXAtMyBpdGVtcy1zdGFydCByb3VuZGVkLWxnIj4nICsNCiAgICAgICAgJzxzcGFuIGNsYXNzPSJmb250LWJvbGQgJyArIGNvbG9yQ2xhc3MgKyAnIj4nICsgKGkrMSkgKyAnPC9zcGFuPicgKw0KICAg"
     b64 = b64 & "ICAgICAnPGEgY2xhc3M9ImxpbmUtY2xhbXAtMiB0ZXh0LW9uLXN1cmZhY2Ugbm8tdW5kZXJsaW5lIiBocmVmPSInICsgZXNjKHAudXJsfHwnIycpICsgJyIgdGFyZ2V0PSJfYmxhbmsiIHJlbD0ibm9vcGVuZXIgbm9yZWZlcnJlciI+JyAr"
-    b64 = b64 & "IGVzYyhwLnRpdGxlKSArICc8L2E+PC9saT4nOw0KICAgIH0pLmpvaW4oJycpOw0KICB9DQogIGZ1bmN0aW9uIHRvZ2dsZVRhYihidG4sIHNob3dJZCwgaGlkZUlkKSB7DQogICAgY29uc3QgY29udGFpbmVyID0gYnRuLnBhcmVudEVsZW1l"
+    b64 = b64 & "IGVzYyhwLnRpdGxlKSArICc8L2E+PC9saT4nOw0KICAgIH0pLmpvaW4oJycpOw0KICB9DQogIGZ1bmN0aW9uIHNob3dUYWIoYnRuLCBzaG93SWQsIHBhbmVsSWRzKSB7DQogICAgY29uc3QgY29udGFpbmVyID0gYnRuLnBhcmVudEVsZW1l"
     b64 = b64 & "bnQ7DQogICAgY29udGFpbmVyLnF1ZXJ5U2VsZWN0b3JBbGwoJ2J1dHRvbicpLmZvckVhY2goZnVuY3Rpb24oYil7DQogICAgICBiLmNsYXNzTGlzdC5yZW1vdmUoJ2JvcmRlci1wcmltYXJ5JywndGV4dC1wcmltYXJ5Jyk7DQogICAgICBi"
     b64 = b64 & "LmNsYXNzTGlzdC5hZGQoJ2JvcmRlci10cmFuc3BhcmVudCcsJ3RleHQtb24tc3VyZmFjZS12YXJpYW50Jyk7DQogICAgfSk7DQogICAgYnRuLmNsYXNzTGlzdC5hZGQoJ2JvcmRlci1wcmltYXJ5JywndGV4dC1wcmltYXJ5Jyk7DQogICAg"
-    b64 = b64 & "YnRuLmNsYXNzTGlzdC5yZW1vdmUoJ2JvcmRlci10cmFuc3BhcmVudCcsJ3RleHQtb24tc3VyZmFjZS12YXJpYW50Jyk7DQogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoc2hvd0lkKS5jbGFzc0xpc3QucmVtb3ZlKCdoaWRkZW4nKTsN"
-    b64 = b64 & "CiAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZChzaG93SWQpLmNsYXNzTGlzdC5hZGQoJ2Jsb2NrJyk7DQogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoaGlkZUlkKS5jbGFzc0xpc3QuYWRkKCdoaWRkZW4nKTsNCiAgICBkb2N1bWVu"
-    b64 = b64 & "dC5nZXRFbGVtZW50QnlJZChoaWRlSWQpLmNsYXNzTGlzdC5yZW1vdmUoJ2Jsb2NrJyk7DQogIH0NCiAgd2luZG93LnRvZ2dsZVRhYiA9IHRvZ2dsZVRhYjsNCiAgZnVuY3Rpb24gcmVuZGVyKGRhdGEpIHsNCiAgICBkb2N1bWVudC5nZXRF"
-    b64 = b64 & "bGVtZW50QnlJZCgnbWV0YVRpbWUnKS50ZXh0Q29udGVudCA9IGRhdGEuY29sbGVjdGVkQXQgfHwgJy0nOw0KICAgIGNvbnN0IG1hcCA9IHt9Ow0KICAgIChkYXRhLmRlcGFydG1lbnRzfHxbXSkuZm9yRWFjaChmdW5jdGlvbihkKXsgbWFw"
-    b64 = b64 & "W2QubmFtZV09ZDsgfSk7DQogICAgY29uc3QgZGVwdHMgPSBPUkRFUi5tYXAoZnVuY3Rpb24obil7IHJldHVybiBtYXBbbl0gfHwgeyBuYW1lOm4sIG5vdGljZXM6W10sIHByZXNzOltdIH07IH0pOw0KICAgIGRvY3VtZW50LmdldEVsZW1l"
-    b64 = b64 & "bnRCeUlkKCdib2FyZCcpLmlubmVySFRNTCA9IGRlcHRzLm1hcChmdW5jdGlvbihkLCBpZHgpew0KICAgICAgY29uc3QgbSA9IE1FVEFbZC5uYW1lXSB8fCB7IGNvbG9yOicjMDA0YWM2JywgaWNvbjonc3RhcicgfTsNCiAgICAgIGNvbnN0"
-    b64 = b64 & "IG5pZCA9ICdub3RpY2UtJyArIGlkeDsNCiAgICAgIGNvbnN0IHBpZCA9ICdwcmVzcy0nICsgaWR4Ow0KICAgICAgcmV0dXJuICc8YXJ0aWNsZSBjbGFzcz0iYmctc3VyZmFjZS1jb250YWluZXItbG93ZXN0IHJvdW5kZWQteGwgc2hhZG93"
-    b64 = b64 & "LVswcHhfNHB4XzEycHhfcmdiYSgwLDAsMCwwLjA1KV0gb3ZlcmZsb3ctaGlkZGVuIj4nICsNCiAgICAgICAgJzxoZWFkZXIgY2xhc3M9InAtNCBmbGV4IGp1c3RpZnktYmV0d2VlbiBpdGVtcy1jZW50ZXIiIHN0eWxlPSJiYWNrZ3JvdW5k"
-    b64 = b64 & "OicgKyBtLmNvbG9yICsgJyI+JyArDQogICAgICAgICc8aDIgY2xhc3M9ImZvbnQtYm9hcmQtdGl0bGUgdGV4dC1ib2FyZC10aXRsZSIgc3R5bGU9ImNvbG9yOiMzZDRhNWMiPicgKyBlc2MoZC5uYW1lKSArICc8L2gyPicgKw0KICAgICAg"
-    b64 = b64 & "ICAnPHNwYW4gY2xhc3M9Im1hdGVyaWFsLXN5bWJvbHMtb3V0bGluZWQiIHN0eWxlPSJmb250LXZhcmlhdGlvbi1zZXR0aW5nczpcJ0ZJTExcJyAxO2NvbG9yOiM1YTY0NzIiPnN0YXI8L3NwYW4+PC9oZWFkZXI+JyArDQogICAgICAgICc8"
-    b64 = b64 & "ZGl2IGNsYXNzPSJwLTAiPjxkaXYgY2xhc3M9ImZsZXggYm9yZGVyLWIgYm9yZGVyLW91dGxpbmUtdmFyaWFudCI+JyArDQogICAgICAgICc8YnV0dG9uIHR5cGU9ImJ1dHRvbiIgY2xhc3M9ImZsZXgtMSBweS0zIGZvbnQtYnV0dG9uLXRl"
-    b64 = b64 & "eHQgdGV4dC1idXR0b24tdGV4dCBib3JkZXItYi0yIGJvcmRlci1wcmltYXJ5IHRleHQtcHJpbWFyeSIgb25jbGljaz0idG9nZ2xlVGFiKHRoaXMsXCcnICsgbmlkICsgJ1wnLFwnJyArIHBpZCArICdcJykiPuqzteyngOyCrO2VrTwvYnV0"
-    b64 = b64 & "dG9uPicgKw0KICAgICAgICAnPGJ1dHRvbiB0eXBlPSJidXR0b24iIGNsYXNzPSJmbGV4LTEgcHktMyBmb250LWJ1dHRvbi10ZXh0IHRleHQtYnV0dG9uLXRleHQgYm9yZGVyLWItMiBib3JkZXItdHJhbnNwYXJlbnQgdGV4dC1vbi1zdXJm"
-    b64 = b64 & "YWNlLXZhcmlhbnQiIG9uY2xpY2s9InRvZ2dsZVRhYih0aGlzLFwnJyArIHBpZCArICdcJyxcJycgKyBuaWQgKyAnXCcpIj7rs7Trj4TsnpDro4w8L2J1dHRvbj4nICsNCiAgICAgICAgJzwvZGl2PicgKw0KICAgICAgICAnPHVsIGNsYXNz"
-    b64 = b64 & "PSJkaXZpZGUteSBkaXZpZGUtcHJpbWFyeS8xMCBwLTIgYmxvY2siIGlkPSInICsgbmlkICsgJyI+JyArIGl0ZW1zSHRtbChkLm5vdGljZXMsICd0ZXh0LXByaW1hcnknKSArICc8L3VsPicgKw0KICAgICAgICAnPHVsIGNsYXNzPSJkaXZp"
-    b64 = b64 & "ZGUteSBkaXZpZGUtcHJpbWFyeS8xMCBwLTIgaGlkZGVuIiBpZD0iJyArIHBpZCArICciPicgKyBpdGVtc0h0bWwoZC5wcmVzcywgJ3RleHQtc2Vjb25kYXJ5JykgKyAnPC91bD4nICsNCiAgICAgICAgJzwvZGl2PjwvYXJ0aWNsZT4nOw0K"
-    b64 = b64 & "ICAgIH0pLmpvaW4oJycpOw0KICB9DQogIGZ1bmN0aW9uIGxvYWQoKXsNCiAgICBjb25zdCByYXcgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbWFqb3ItZGF0YScpLnRleHRDb250ZW50LnRyaW0oKTsNCiAgICBsZXQgZGF0YSA9IHsg"
-    b64 = b64 & "Y29sbGVjdGVkQXQ6JycsIGRlcGFydG1lbnRzOltdIH07DQogICAgdHJ5IHsgaWYgKHJhdyAmJiByYXcuY2hhckF0KDApPT09J3snKSBkYXRhID0gSlNPTi5wYXJzZShyYXcpOyB9IGNhdGNoKGUpeyBjb25zb2xlLmVycm9yKGUpOyB9DQog"
-    b64 = b64 & "ICAgcmVuZGVyKGRhdGEpOw0KICB9DQogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdidG5SZWxvYWQnKS5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsIGZ1bmN0aW9uKCl7IGxvY2F0aW9uLnJlbG9hZCgpOyB9KTsNCiAgbG9hZCgpOw0K"
-    b64 = b64 & "fSkoKTsNCjwvc2NyaXB0Pg0KPC9ib2R5Pg0KPC9odG1sPg0K"
+    b64 = b64 & "YnRuLmNsYXNzTGlzdC5yZW1vdmUoJ2JvcmRlci10cmFuc3BhcmVudCcsJ3RleHQtb24tc3VyZmFjZS12YXJpYW50Jyk7DQogICAgcGFuZWxJZHMuZm9yRWFjaChmdW5jdGlvbihpZCl7DQogICAgICBjb25zdCBlbCA9IGRvY3VtZW50Lmdl"
+    b64 = b64 & "dEVsZW1lbnRCeUlkKGlkKTsNCiAgICAgIGlmICghZWwpIHJldHVybjsNCiAgICAgIGlmIChpZCA9PT0gc2hvd0lkKSB7IGVsLmNsYXNzTGlzdC5yZW1vdmUoJ2hpZGRlbicpOyBlbC5jbGFzc0xpc3QuYWRkKCdibG9jaycpOyB9DQogICAg"
+    b64 = b64 & "ICBlbHNlIHsgZWwuY2xhc3NMaXN0LmFkZCgnaGlkZGVuJyk7IGVsLmNsYXNzTGlzdC5yZW1vdmUoJ2Jsb2NrJyk7IH0NCiAgICB9KTsNCiAgfQ0KICB3aW5kb3cuc2hvd1RhYiA9IHNob3dUYWI7DQogIGZ1bmN0aW9uIHJlbmRlcihkYXRh"
+    b64 = b64 & "KSB7DQogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ21ldGFUaW1lJykudGV4dENvbnRlbnQgPSBkYXRhLmNvbGxlY3RlZEF0IHx8ICctJzsNCiAgICBjb25zdCBtYXAgPSB7fTsNCiAgICAoZGF0YS5kZXBhcnRtZW50c3x8W10pLmZv"
+    b64 = b64 & "ckVhY2goZnVuY3Rpb24oZCl7IG1hcFtkLm5hbWVdPWQ7IH0pOw0KICAgIGNvbnN0IGRlcHRzID0gT1JERVIubWFwKGZ1bmN0aW9uKG4peyByZXR1cm4gbWFwW25dIHx8IHsgbmFtZTpuLCBub3RpY2VzOltdLCBwcmVzczpbXSwgaHI6W10g"
+    b64 = b64 & "fTsgfSk7DQogICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2JvYXJkJykuaW5uZXJIVE1MID0gZGVwdHMubWFwKGZ1bmN0aW9uKGQsIGlkeCl7DQogICAgICBjb25zdCBtID0gTUVUQVtkLm5hbWVdIHx8IHsgY29sb3I6JyMwMDRhYzYn"
+    b64 = b64 & "LCBpY29uOidzdGFyJyB9Ow0KICAgICAgY29uc3Qgbm90aWNlTGFiZWwgPSBkLm5vdGljZUxhYmVsIHx8ICfqs7Xsp4Dsgqztla0nOw0KICAgICAgY29uc3QgcHJlc3NMYWJlbCA9IGQucHJlc3NMYWJlbCB8fCAn67O064+E7J6Q66OMJzsN"
+    b64 = b64 & "CiAgICAgIGNvbnN0IGhyTGFiZWwgPSBkLmhyTGFiZWwgfHwgJ+yduOyCrOuPmeyglSc7DQogICAgICBjb25zdCBoYXNIciA9IEFycmF5LmlzQXJyYXkoZC5ocik7DQogICAgICBjb25zdCBuaWQgPSAnbm90aWNlLScgKyBpZHg7DQogICAg"
+    b64 = b64 & "ICBjb25zdCBwaWQgPSAncHJlc3MtJyArIGlkeDsNCiAgICAgIGNvbnN0IGhpZCA9ICdoci0nICsgaWR4Ow0KICAgICAgY29uc3QgcGFuZWxzID0gaGFzSHIgPyAoIlsnIiArIG5pZCArICInLCciICsgcGlkICsgIicsJyIgKyBoaWQgKyAi"
+    b64 = b64 & "J10iKSA6ICgiWyciICsgbmlkICsgIicsJyIgKyBwaWQgKyAiJ10iKTsNCiAgICAgIGxldCB0YWJzID0gJzxidXR0b24gdHlwZT0iYnV0dG9uIiBjbGFzcz0iZmxleC0xIHB5LTMgcHgtMSBmb250LWJ1dHRvbi10ZXh0IHRleHQtYnV0dG9u"
+    b64 = b64 & "LXRleHQgYm9yZGVyLWItMiBib3JkZXItcHJpbWFyeSB0ZXh0LXByaW1hcnkiIG9uY2xpY2s9InNob3dUYWIodGhpcyxcJycgKyBuaWQgKyAnXCcsJyArIHBhbmVscyArICcpIj4nICsgZXNjKG5vdGljZUxhYmVsKSArICc8L2J1dHRvbj4n"
+    b64 = b64 & "ICsNCiAgICAgICAgJzxidXR0b24gdHlwZT0iYnV0dG9uIiBjbGFzcz0iZmxleC0xIHB5LTMgcHgtMSBmb250LWJ1dHRvbi10ZXh0IHRleHQtYnV0dG9uLXRleHQgYm9yZGVyLWItMiBib3JkZXItdHJhbnNwYXJlbnQgdGV4dC1vbi1zdXJm"
+    b64 = b64 & "YWNlLXZhcmlhbnQiIG9uY2xpY2s9InNob3dUYWIodGhpcyxcJycgKyBwaWQgKyAnXCcsJyArIHBhbmVscyArICcpIj4nICsgZXNjKHByZXNzTGFiZWwpICsgJzwvYnV0dG9uPic7DQogICAgICBpZiAoaGFzSHIpIHsNCiAgICAgICAgdGFi"
+    b64 = b64 & "cyArPSAnPGJ1dHRvbiB0eXBlPSJidXR0b24iIGNsYXNzPSJmbGV4LTEgcHktMyBweC0xIGZvbnQtYnV0dG9uLXRleHQgdGV4dC1idXR0b24tdGV4dCBib3JkZXItYi0yIGJvcmRlci10cmFuc3BhcmVudCB0ZXh0LW9uLXN1cmZhY2UtdmFy"
+    b64 = b64 & "aWFudCIgb25jbGljaz0ic2hvd1RhYih0aGlzLFwnJyArIGhpZCArICdcJywnICsgcGFuZWxzICsgJykiPicgKyBlc2MoaHJMYWJlbCkgKyAnPC9idXR0b24+JzsNCiAgICAgIH0NCiAgICAgIGxldCBwYW5lbHNIdG1sID0gJzx1bCBjbGFz"
+    b64 = b64 & "cz0iZGl2aWRlLXkgZGl2aWRlLXByaW1hcnkvMTAgcC0yIGJsb2NrIiBpZD0iJyArIG5pZCArICciPicgKyBpdGVtc0h0bWwoZC5ub3RpY2VzLCAndGV4dC1wcmltYXJ5JykgKyAnPC91bD4nICsNCiAgICAgICAgJzx1bCBjbGFzcz0iZGl2"
+    b64 = b64 & "aWRlLXkgZGl2aWRlLXByaW1hcnkvMTAgcC0yIGhpZGRlbiIgaWQ9IicgKyBwaWQgKyAnIj4nICsgaXRlbXNIdG1sKGQucHJlc3MsICd0ZXh0LXNlY29uZGFyeScpICsgJzwvdWw+JzsNCiAgICAgIGlmIChoYXNIcikgew0KICAgICAgICBw"
+    b64 = b64 & "YW5lbHNIdG1sICs9ICc8dWwgY2xhc3M9ImRpdmlkZS15IGRpdmlkZS1wcmltYXJ5LzEwIHAtMiBoaWRkZW4iIGlkPSInICsgaGlkICsgJyI+JyArIGl0ZW1zSHRtbChkLmhyLCAndGV4dC10ZXJ0aWFyeScpICsgJzwvdWw+JzsNCiAgICAg"
+    b64 = b64 & "IH0NCiAgICAgIHJldHVybiAnPGFydGljbGUgY2xhc3M9ImJnLXN1cmZhY2UtY29udGFpbmVyLWxvd2VzdCByb3VuZGVkLXhsIHNoYWRvdy1bMHB4XzRweF8xMnB4X3JnYmEoMCwwLDAsMC4wNSldIG92ZXJmbG93LWhpZGRlbiI+JyArDQog"
+    b64 = b64 & "ICAgICAgICc8aGVhZGVyIGNsYXNzPSJwLTQgZmxleCBqdXN0aWZ5LWJldHdlZW4gaXRlbXMtY2VudGVyIiBzdHlsZT0iYmFja2dyb3VuZDonICsgbS5jb2xvciArICciPicgKw0KICAgICAgICAnPGgyIGNsYXNzPSJmb250LWJvYXJkLXRp"
+    b64 = b64 & "dGxlIHRleHQtYm9hcmQtdGl0bGUiIHN0eWxlPSJjb2xvcjojM2Q0YTVjIj4nICsgZXNjKGQubmFtZSkgKyAnPC9oMj4nICsNCiAgICAgICAgJzxzcGFuIGNsYXNzPSJtYXRlcmlhbC1zeW1ib2xzLW91dGxpbmVkIiBzdHlsZT0iZm9udC12"
+    b64 = b64 & "YXJpYXRpb24tc2V0dGluZ3M6XCdGSUxMXCcgMTtjb2xvcjojNWE2NDcyIj5zdGFyPC9zcGFuPjwvaGVhZGVyPicgKw0KICAgICAgICAnPGRpdiBjbGFzcz0icC0wIj48ZGl2IGNsYXNzPSJmbGV4IGJvcmRlci1iIGJvcmRlci1vdXRsaW5l"
+    b64 = b64 & "LXZhcmlhbnQiPicgKyB0YWJzICsgJzwvZGl2PicgKyBwYW5lbHNIdG1sICsgJzwvZGl2PjwvYXJ0aWNsZT4nOw0KICAgIH0pLmpvaW4oJycpOw0KICB9DQogIGZ1bmN0aW9uIGxvYWQoKXsNCiAgICBjb25zdCByYXcgPSBkb2N1bWVudC5n"
+    b64 = b64 & "ZXRFbGVtZW50QnlJZCgnbWFqb3ItZGF0YScpLnRleHRDb250ZW50LnRyaW0oKTsNCiAgICBsZXQgZGF0YSA9IHsgY29sbGVjdGVkQXQ6JycsIGRlcGFydG1lbnRzOltdIH07DQogICAgdHJ5IHsgaWYgKHJhdyAmJiByYXcuY2hhckF0KDAp"
+    b64 = b64 & "PT09J3snKSBkYXRhID0gSlNPTi5wYXJzZShyYXcpOyB9IGNhdGNoKGUpeyBjb25zb2xlLmVycm9yKGUpOyB9DQogICAgcmVuZGVyKGRhdGEpOw0KICB9DQogIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdidG5SZWxvYWQnKS5hZGRFdmVu"
+    b64 = b64 & "dExpc3RlbmVyKCdjbGljaycsIGZ1bmN0aW9uKCl7IGxvY2F0aW9uLnJlbG9hZCgpOyB9KTsNCiAgbG9hZCgpOw0KfSkoKTsNCjwvc2NyaXB0Pg0KPC9ib2R5Pg0KPC9odG1sPg0K"
     EmbeddedMajorPressTemplateMobile = DecodeBase64Utf8(b64)
 End Function
 

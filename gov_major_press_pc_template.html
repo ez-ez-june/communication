@@ -74,9 +74,10 @@ body { font-family:'Public Sans',sans-serif; background-color:#f7f8fa; }
 <span class="material-symbols-outlined text-[16px]">schedule</span>데이터 준비 중…
 </span>
 </div>
-<div class="flex gap-2">
+<div class="flex gap-2 flex-wrap">
 <span class="px-3 py-1 rounded-full border border-primary text-primary font-meta-data text-meta-data bg-white">공지사항</span>
 <span class="px-3 py-1 rounded-full border border-secondary text-secondary font-meta-data text-meta-data bg-white">보도자료</span>
+<span class="px-3 py-1 rounded-full border border-tertiary text-tertiary font-meta-data text-meta-data bg-white">인사동정</span>
 </div>
 </div>
 <section class="flex flex-col gap-8" id="board"></section>
@@ -103,7 +104,7 @@ body { font-family:'Public Sans',sans-serif; background-color:#f7f8fa; }
   };
   const ORDER = ['산업통상부','기후에너지환경부','고용노동부','외교부'];
   function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function listHtml(items, accent, isPress) {
+  function listHtml(items, isPress) {
     const arr = (items||[]).slice(0,5);
     if (!arr.length) return '<li class="py-3 text-on-surface-variant font-meta-data text-meta-data">표시할 항목이 없습니다.</li>';
     return arr.map(function(p,i){
@@ -114,29 +115,37 @@ body { font-family:'Public Sans',sans-serif; background-color:#f7f8fa; }
         '<a class="font-list-item text-list-item text-on-surface line-clamp-1 hover:opacity-80 no-underline" style="color:inherit" href="' + esc(p.url||'#') + '" target="_blank" rel="noopener noreferrer">' + esc(p.title) + '</a>' + date + '</li>';
     }).join('');
   }
+  function sectionHtml(title, icon, colorStyle, items, isPress, extraClass) {
+    return '<div class="p-6' + (extraClass || '') + '"><h4 class="flex items-center gap-2 mb-4 font-button-text text-button-text" style="' + colorStyle + '">' +
+      '<span class="material-symbols-outlined text-[18px]">' + icon + '</span>' + esc(title) + '</h4>' +
+      '<ul class="space-y-1">' + listHtml(items, isPress) + '</ul></div>';
+  }
   function render(data) {
     const board = document.getElementById('board');
     const map = {};
     (data.departments||[]).forEach(function(d){ map[d.name]=d; });
-    const depts = ORDER.map(function(n){ return map[n] || { name:n, ok:false, notices:[], press:[] }; });
+    const depts = ORDER.map(function(n){ return map[n] || { name:n, ok:false, notices:[], press:[], hr:[] }; });
     document.getElementById('metaLine').innerHTML =
       '<span class="material-symbols-outlined text-[16px]">schedule</span>최근 업데이트: <strong class="ml-1">' + esc(data.collectedAt||'-') + '</strong>' +
       '<span class="mx-2">|</span>모니터링 부처: <strong>' + depts.length + '개</strong>';
     board.innerHTML = depts.map(function(d){
       const m = META[d.name] || { color:'#004ac6', icon:'star', domain:'' };
+      const noticeLabel = d.noticeLabel || '공지사항';
+      const pressLabel = d.pressLabel || '보도자료';
+      const hrLabel = d.hrLabel || '인사동정';
+      const hasHr = Array.isArray(d.hr);
+      const cols = hasHr ? 'md:grid-cols-3' : 'md:grid-cols-2';
+      let body = sectionHtml(noticeLabel, 'notifications', 'color:#6b8fb8', d.notices, false, '');
+      body += sectionHtml(pressLabel, 'newspaper', 'color:#c9956e', d.press, true, ' bg-surface-container-lowest/50');
+      if (hasHr) {
+        body += sectionHtml(hrLabel, 'badge', 'color:#b08978', d.hr, false, '');
+      }
       return '<article class="dept-card bg-white rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] overflow-hidden border border-outline-variant/30 flex flex-col">' +
         '<div class="px-6 py-4 flex justify-between items-center" style="background:' + m.color + '">' +
         '<div class="flex items-center gap-3"><span class="material-symbols-outlined" style="color:#3d4a5c">' + m.icon + '</span>' +
         '<h3 class="font-board-title text-board-title" style="color:#3d4a5c">' + esc(d.name) + '</h3></div>' +
         '<span class="font-meta-data text-meta-data" style="color:#5a6472">' + esc(m.domain) + '</span></div>' +
-        '<div class="grid grid-cols-1 md:grid-cols-2 divide-x divide-outline-variant/20">' +
-        '<div class="p-6"><h4 class="flex items-center gap-2 mb-4 font-button-text text-button-text" style="color:#6b8fb8">' +
-        '<span class="material-symbols-outlined text-[18px]">notifications</span>공지사항</h4>' +
-        '<ul class="space-y-1">' + listHtml(d.notices, m.color, false) + '</ul></div>' +
-        '<div class="p-6 bg-surface-container-lowest/50"><h4 class="flex items-center gap-2 mb-4 font-button-text text-button-text text-secondary">' +
-        '<span class="material-symbols-outlined text-[18px]">newspaper</span>보도자료</h4>' +
-        '<ul class="space-y-1">' + listHtml(d.press, m.color, true) + '</ul></div>' +
-        '</div></article>';
+        '<div class="grid grid-cols-1 ' + cols + ' divide-x divide-outline-variant/20">' + body + '</div></article>';
     }).join('');
   }
   function load(){

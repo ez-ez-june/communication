@@ -98,7 +98,7 @@ body { font-family:'Public Sans',sans-serif; }
         '<a class="line-clamp-2 text-on-surface no-underline" href="' + esc(p.url||'#') + '" target="_blank" rel="noopener noreferrer">' + esc(p.title) + '</a></li>';
     }).join('');
   }
-  function toggleTab(btn, showId, hideId) {
+  function showTab(btn, showId, panelIds) {
     const container = btn.parentElement;
     container.querySelectorAll('button').forEach(function(b){
       b.classList.remove('border-primary','text-primary');
@@ -106,32 +106,44 @@ body { font-family:'Public Sans',sans-serif; }
     });
     btn.classList.add('border-primary','text-primary');
     btn.classList.remove('border-transparent','text-on-surface-variant');
-    document.getElementById(showId).classList.remove('hidden');
-    document.getElementById(showId).classList.add('block');
-    document.getElementById(hideId).classList.add('hidden');
-    document.getElementById(hideId).classList.remove('block');
+    panelIds.forEach(function(id){
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (id === showId) { el.classList.remove('hidden'); el.classList.add('block'); }
+      else { el.classList.add('hidden'); el.classList.remove('block'); }
+    });
   }
-  window.toggleTab = toggleTab;
+  window.showTab = showTab;
   function render(data) {
     document.getElementById('metaTime').textContent = data.collectedAt || '-';
     const map = {};
     (data.departments||[]).forEach(function(d){ map[d.name]=d; });
-    const depts = ORDER.map(function(n){ return map[n] || { name:n, notices:[], press:[] }; });
+    const depts = ORDER.map(function(n){ return map[n] || { name:n, notices:[], press:[], hr:[] }; });
     document.getElementById('board').innerHTML = depts.map(function(d, idx){
       const m = META[d.name] || { color:'#004ac6', icon:'star' };
+      const noticeLabel = d.noticeLabel || '공지사항';
+      const pressLabel = d.pressLabel || '보도자료';
+      const hrLabel = d.hrLabel || '인사동정';
+      const hasHr = Array.isArray(d.hr);
       const nid = 'notice-' + idx;
       const pid = 'press-' + idx;
+      const hid = 'hr-' + idx;
+      const panels = hasHr ? ("['" + nid + "','" + pid + "','" + hid + "']") : ("['" + nid + "','" + pid + "']");
+      let tabs = '<button type="button" class="flex-1 py-3 px-1 font-button-text text-button-text border-b-2 border-primary text-primary" onclick="showTab(this,\'' + nid + '\',' + panels + ')">' + esc(noticeLabel) + '</button>' +
+        '<button type="button" class="flex-1 py-3 px-1 font-button-text text-button-text border-b-2 border-transparent text-on-surface-variant" onclick="showTab(this,\'' + pid + '\',' + panels + ')">' + esc(pressLabel) + '</button>';
+      if (hasHr) {
+        tabs += '<button type="button" class="flex-1 py-3 px-1 font-button-text text-button-text border-b-2 border-transparent text-on-surface-variant" onclick="showTab(this,\'' + hid + '\',' + panels + ')">' + esc(hrLabel) + '</button>';
+      }
+      let panelsHtml = '<ul class="divide-y divide-primary/10 p-2 block" id="' + nid + '">' + itemsHtml(d.notices, 'text-primary') + '</ul>' +
+        '<ul class="divide-y divide-primary/10 p-2 hidden" id="' + pid + '">' + itemsHtml(d.press, 'text-secondary') + '</ul>';
+      if (hasHr) {
+        panelsHtml += '<ul class="divide-y divide-primary/10 p-2 hidden" id="' + hid + '">' + itemsHtml(d.hr, 'text-tertiary') + '</ul>';
+      }
       return '<article class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] overflow-hidden">' +
         '<header class="p-4 flex justify-between items-center" style="background:' + m.color + '">' +
         '<h2 class="font-board-title text-board-title" style="color:#3d4a5c">' + esc(d.name) + '</h2>' +
         '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1;color:#5a6472">star</span></header>' +
-        '<div class="p-0"><div class="flex border-b border-outline-variant">' +
-        '<button type="button" class="flex-1 py-3 font-button-text text-button-text border-b-2 border-primary text-primary" onclick="toggleTab(this,\'' + nid + '\',\'' + pid + '\')">공지사항</button>' +
-        '<button type="button" class="flex-1 py-3 font-button-text text-button-text border-b-2 border-transparent text-on-surface-variant" onclick="toggleTab(this,\'' + pid + '\',\'' + nid + '\')">보도자료</button>' +
-        '</div>' +
-        '<ul class="divide-y divide-primary/10 p-2 block" id="' + nid + '">' + itemsHtml(d.notices, 'text-primary') + '</ul>' +
-        '<ul class="divide-y divide-primary/10 p-2 hidden" id="' + pid + '">' + itemsHtml(d.press, 'text-secondary') + '</ul>' +
-        '</div></article>';
+        '<div class="p-0"><div class="flex border-b border-outline-variant">' + tabs + '</div>' + panelsHtml + '</div></article>';
     }).join('');
   }
   function load(){
