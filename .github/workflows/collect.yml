@@ -1,9 +1,8 @@
 name: Collect notices
 
 on:
-  schedule:
-    # Every day at 03:00 UTC = 12:00 KST
-    - cron: "0 3 * * *"
+  # Daily cron disabled: hosted runners cannot reach .go.kr, but still
+  # deployed HTML and overwrote Excel-published Pages.
   workflow_dispatch:
 
 permissions:
