@@ -1,20 +1,14 @@
 # Ignore everything by default
 *
 
-# Keep Excel workbooks
-!*.xlsm
-!*.xlsx
-!*.xls
+# Keep published board HTML only (no templates / legacy boards)
+!gov_notice_board.html
+!gov_notice_board_mobile.html
+!index.html
 
-# Keep HTML boards and templates
-!*.html
-!*.htm
-
-# Keep Python collector
+# Keep Python collector (Lightsail source mirror)
 !*.py
 !requirements.txt
-
-# Keep package dirs
 !parsers/
 !parsers/**
 !config/
@@ -26,12 +20,9 @@
 !.github/
 !.github/**
 
-# Keep project docs / VBA reference (optional)
-!*.md
-!*.bas
 !.gitignore
 
-# Still ignore secrets / local junk
+# Local / secrets / Excel (not for Pages)
 .env
 .env.*
 __pycache__/
@@ -41,3 +32,11 @@ venv/
 ~$*
 xlsm_extract/
 *.log
+업데이트.md
+보관-레거시/
+data/*_prev.json
+*.xlsm
+*.xlsx
+*.xls
+*.bas
+*.md
