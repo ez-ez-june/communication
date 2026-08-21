@@ -270,11 +270,11 @@
     if (!bar) return;
     bar.classList.remove('hidden');
     if (label) label.textContent = (count || 0) + '건';
-    if (!count) {
-      newOnly = false;
-      const box = document.getElementById('newOnly');
-      if (box) box.checked = false;
-    }
+  }
+  const EMPTY_NEW_MSG = '지금은 새글이 없습니다.';
+  function emptyNewBoardHtml() {
+    return '<div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest rounded-xl border border-dashed border-outline-variant">' +
+      '<p class="font-list-item text-list-item">' + EMPTY_NEW_MSG + '</p></div>';
   }
 
   function colorFor(name) {
@@ -333,6 +333,10 @@
   function renderMajorTogether() {
     const board = document.getElementById('board');
     board.className = 'mb-20 px-4 flex flex-col gap-5 max-w-lg mx-auto w-full';
+    if (newOnly && countNewMajor() === 0) {
+      board.innerHTML = emptyNewBoardHtml();
+      return;
+    }
     const map = {};
     majorDepts.forEach(function (d) { map[d.name] = d; });
     const depts = MAJOR_ORDER.map(function (n) { return map[n] || { name: n, notices: [], press: [], hr: [] }; });
@@ -385,7 +389,9 @@
       });
     }
     if (!depts.length) {
-      board.innerHTML = '<div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest rounded-xl border border-dashed border-outline-variant">표시할 공지 데이터가 없습니다.</div>';
+      board.innerHTML = newOnly
+        ? emptyNewBoardHtml()
+        : '<div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest rounded-xl border border-dashed border-outline-variant">표시할 공지 데이터가 없습니다.</div>';
       return;
     }
     board.innerHTML = depts.map(function (d) {
