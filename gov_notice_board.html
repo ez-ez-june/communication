@@ -137,12 +137,12 @@
 <span class="material-symbols-outlined text-primary text-sm">schedule</span>
 <p class="font-meta-data text-meta-data text-on-surface-variant" id="metaLine">데이터 준비 중…</p>
 </div>
-<div id="newBar" class="hidden bg-[#e8f1f8] rounded-lg border border-[#6b8fb8]/40 px-4 py-2 flex items-center justify-between gap-3">
+<div id="newBar" class="bg-[#e8f1f8] rounded-lg border border-[#6b8fb8]/40 px-4 py-2 flex items-center justify-between gap-3">
 <label class="flex items-center gap-2 font-meta-data text-meta-data text-on-surface cursor-pointer">
 <input id="newOnly" type="checkbox" class="rounded border-outline-variant"/>
 새글만 보기
 </label>
-<p id="newCountLabel" class="font-meta-data text-meta-data text-[#3d4a5c]"></p>
+<p id="newCountLabel" class="font-meta-data text-meta-data text-[#3d4a5c]">신규 0건</p>
 </div>
 </div>
 
@@ -297,15 +297,13 @@
     const bar = document.getElementById('newBar');
     const label = document.getElementById('newCountLabel');
     if (!bar) return;
+    bar.classList.remove('hidden');
+    if (label) label.textContent = '신규 ' + (count || 0) + '건';
     if (!count) {
-      bar.classList.add('hidden');
       newOnly = false;
       const box = document.getElementById('newOnly');
       if (box) box.checked = false;
-      return;
     }
-    bar.classList.remove('hidden');
-    if (label) label.textContent = '신규 ' + count + '건';
   }
 
   function colorFor(name) {

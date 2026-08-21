@@ -123,10 +123,10 @@
 <span id="metaTime">마지막 업데이트: -</span>
 </div>
 <div id="metaCount"></div>
-<label id="newBar" class="hidden flex items-center gap-1 text-on-primary">
+<label id="newBar" class="flex items-center gap-1 text-on-primary">
 <input id="newOnly" type="checkbox" class="rounded"/>
 <span>새글만</span>
-<span id="newCountLabel"></span>
+<span id="newCountLabel">0건</span>
 </label>
 </div>
 </header>
@@ -268,15 +268,13 @@
     const bar = document.getElementById('newBar');
     const label = document.getElementById('newCountLabel');
     if (!bar) return;
+    bar.classList.remove('hidden');
+    if (label) label.textContent = (count || 0) + '건';
     if (!count) {
-      bar.classList.add('hidden');
       newOnly = false;
       const box = document.getElementById('newOnly');
       if (box) box.checked = false;
-      return;
     }
-    bar.classList.remove('hidden');
-    if (label) label.textContent = count + '건';
   }
 
   function colorFor(name) {
